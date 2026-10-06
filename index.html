@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0e1116">
+<title>CP Tracker · Your practice room</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0e1116; --card: #171b22; --raised: #20262f; --line: #2a303a;
+  --txt: #ecedf2; --mut: #9ba5b4; --acc: #90d9c1; --partner: #b1adf3; --star: #eac77f;
+  --g0: #232b32; --g1: #29483f; --g2: #39765f; --g3: #63a88a; --g4: #90d9c1;
+  --mono: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scrollbar-color: #394451 var(--bg); }
+body { margin: 0; background: var(--bg); color: var(--txt); font: 14px/1.55 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; }
+button, a, input, select { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--acc); }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible, [tabindex="0"]:focus-visible { outline: 2px solid var(--acc); outline-offset: 4px; }
+button:disabled { opacity: .5; cursor: wait; }
+h1, h2, h3, h4, p { margin: 0; }
+h2, h3 { font-size: 19px; line-height: 1.35; font-weight: 620; letter-spacing: -.4px; }
+.icon { width: 18px; height: 18px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.eyebrow { color: var(--mut); font-size: 10px; font-weight: 650; text-transform: uppercase; letter-spacing: 1.5px; }
+.mut { color: var(--mut); font-size: 12px; }
+.accent { color: var(--acc); }
+.app { display: grid; grid-template-columns: 208px minmax(0, 1fr); min-height: 100vh; }
+.rail { position: sticky; top: 0; height: 100vh; border-right: 1px solid #ffffff08; padding: 30px 18px 24px; display: flex; flex-direction: column; background: #11151b; }
+.brand { display: flex; align-items: center; gap: 11px; padding: 0 6px; font-weight: 650; font-size: 16px; letter-spacing: -.4px; }
+.brand-mark { display: grid; place-items: center; width: 34px; height: 36px; border: 1px solid #90d9c130; border-radius: 10px; color: var(--acc); background: #90d9c110; font: 600 18px var(--mono); }
+.brand small { display: block; color: #858e9d; font-size: 9px; letter-spacing: 1.35px; margin-top: 3px; font-weight: 500; }
+.rail-label { margin: 48px 14px 14px; font-size: 9px; color: #788393; }
+#tabs { display: grid; gap: 7px; }
+#tabs button { position: relative; display: flex; align-items: center; gap: 11px; width: 100%; text-align: left; padding: 12px 14px; background: transparent; color: var(--mut); border: 1px solid transparent; border-radius: 9px; font-size: 13px; transition: background .15s, color .15s; }
+#tabs button:hover { color: var(--txt); background: #ffffff04; }
+#tabs button.on { color: var(--txt); background: #222932; border-color: #ffffff08; }
+#tabs button.on::before { content: ''; position: absolute; left: -19px; top: 13px; bottom: 13px; width: 3px; border-radius: 0 3px 3px 0; background: var(--acc); }
+#tabs button.on .icon { color: var(--acc); }
+#tabs .nav-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.nav-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--user-color, var(--acc)); flex-shrink: 0; }
+.rail-bottom { margin-top: auto; padding: 17px 13px; border: 1px solid #ffffff08; background: #ffffff02; border-radius: 10px; }
+.rail-bottom .eyebrow { font-size: 9px; letter-spacing: 1px; }
+.rail-bottom .mut { margin-top: 7px; font-size: 11px; }
+.workspace { min-width: 0; padding: 0 36px 28px; }
+.topbar { min-height: 76px; border-bottom: 1px solid #ffffff08; display: flex; align-items: center; gap: 14px; }
+.breadcrumb { display: flex; gap: 12px; align-items: center; margin-right: auto; color: #7e8998; font-size: 12px; }
+.breadcrumb b { color: #c4cbd5; font-weight: 500; }
+.top-actions { display: flex; align-items: center; gap: 10px; }
+.sync-status { display: flex; align-items: center; gap: 7px; color: var(--mut); font-size: 11px; max-width: 240px; margin-right: 9px; }
+.status-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--acc); flex-shrink: 0; }
+.sync-status[data-state="error"] .status-dot { background: #e9aa89; }
+.sync-status[data-state="loading"] .status-dot { animation: pulse 1.4s ease-in-out infinite; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: var(--txt); border: 1px solid #36404d; background: #222a34; border-radius: 8px; padding: 10px 14px; font-size: 12px; font-weight: 550; line-height: 1.4; transition: background .15s, border-color .15s; }
+.btn:hover { background: #2b3541; border-color: #586577; }
+.btn-primary { background: var(--acc); border-color: var(--acc); color: #142820; }
+.btn-primary:hover { background: #b0e8d5; border-color: #b0e8d5; }
+.btn-ghost { border-color: transparent; background: transparent; color: var(--mut); }
+.btn-ghost:hover { background: #ffffff05; border-color: transparent; color: var(--txt); }
+#sidebarToggle { padding: 7px; }
+main { max-width: 1240px; margin: 0 auto; }
+.hero { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 32px 0 27px; }
+.hero h1 { font-size: clamp(28px, 2.6vw, 36px); line-height: 1.15; font-weight: 600; letter-spacing: -1.2px; margin: 9px 0 9px; overflow-wrap: anywhere; }
+.hero-copy { color: var(--mut); font-size: 13px; line-height: 1.65; }
+.hero .eyebrow { color: #a0beb6; }
+.hero-date { display: flex; align-items: center; gap: 9px; color: #aeb7c4; font-size: 12px; white-space: nowrap; }
+.hero-date .icon { width: 16px; color: #738090; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; }
+.section-heading .eyebrow { margin-bottom: 6px; }
+.card { background: var(--card); border: 1px solid #ffffff0b; border-radius: 15px; padding: 26px; min-width: 0; box-shadow: 0 4px 20px #0000000a; }
+.card-note { margin-top: 17px; font-size: 11px; color: #929dad; line-height: 1.65; }
+.rhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+select, input { color: var(--txt); border: 1px solid #35404d; background: #12171f; padding: 10px 12px; border-radius: 8px; min-width: 0; }
+select { cursor: pointer; font-size: 12px; }
+input { width: 100%; }
+input::placeholder { color: #7f8a9a; }
+label { display: block; color: var(--mut); font-size: 12px; margin-bottom: 7px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+#weeklyView { position: relative; overflow: hidden; margin-bottom: 24px; padding: 28px 30px 22px; border-color: #3b46524d; background: linear-gradient(120deg, #90d9c10b, transparent 42%, #b1adf30b), var(--card); }
+#weeklyView::before { content: ''; position: absolute; top: 0; left: 28px; right: 28px; height: 1px; background: linear-gradient(90deg, #90d9c170, #ffffff08 50%, #b1adf370); }
+#weeklyView .section-heading { align-items: start; margin-bottom: 24px; }
+.race-heading { display: flex; align-items: center; gap: 10px; }
+.race-heading > .icon { width: 19px; color: var(--star); }
+.week-range { color: var(--mut); font-size: 12px; margin-top: 6px; }
+.week-select { padding: 8px 11px; background: #ffffff04; border-color: #ffffff14; }
+.week-cards { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 60px; }
+.week-cards::after { content: 'VS'; position: absolute; left: 50%; top: 48%; transform: translate(-50%, -50%); display: grid; place-items: center; border: 1px solid #ffffff10; border-radius: 50%; width: 32px; height: 32px; color: #748092; background: var(--card); font-size: 9px; font-weight: 650; letter-spacing: 1px; }
+.week-user { --user-color: var(--acc); min-width: 0; }
+.user-line { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.avatar { width: 35px; height: 35px; border-radius: 10px; display: grid; place-items: center; background: color-mix(in srgb, var(--user-color) 12%, transparent); border: 1px solid color-mix(in srgb, var(--user-color) 18%, transparent); color: var(--user-color); font-size: 12px; font-weight: 650; flex-shrink: 0; }
+.user-line h4 { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.mini-tag { color: var(--user-color); background: color-mix(in srgb, var(--user-color) 9%, transparent); padding: 4px 8px; border-radius: 5px; font-size: 9px; font-weight: 650; letter-spacing: .8px; margin-left: auto; }
+.strip { display: flex; align-items: end; gap: 28px; flex-wrap: wrap; }
+.stat b { display: block; font-size: 24px; font-weight: 550; letter-spacing: -.7px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--mut); font-size: 11px; }
+.week-user .strip { margin: 22px 0 21px; }
+.week-user .stat:first-child { margin-right: auto; }
+.week-user .stat:first-child b { font-size: clamp(32px, 4vw, 54px); font-weight: 550; letter-spacing: -2px; color: var(--user-color); }
+.week-user .stat:first-child span { color: var(--user-color); opacity: .75; }
+.week-user .stat:not(:first-child) b { font-size: 20px; margin-bottom: 4px; }
+.week-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.day { text-align: center; color: #8e99aa; font-size: 10px; }
+.day-box { display: grid; place-items: center; height: 25px; border: 1px solid #ffffff06; background: #ffffff04; border-radius: 5px; margin-bottom: 5px; font-size: 10px; }
+.day.done .day-box { color: var(--user-color); border-color: color-mix(in srgb, var(--user-color) 16%, transparent); background: color-mix(in srgb, var(--user-color) 11%, transparent); }
+.day.future { opacity: .35; }
+.race-progress { display: flex; gap: 4px; overflow: hidden; height: 5px; background: #ffffff06; border-radius: 4px; margin-top: 24px; }
+.race-progress span { background: var(--user-color); border-radius: 3px; opacity: .85; }
+.race-footer { display: flex; justify-content: space-between; gap: 18px; align-items: center; margin-top: 13px; }
+.week-summary { font-size: 12px; color: #c4ccd7; }
+.race-footer .card-note { margin: 0; text-align: right; max-width: 380px; font-size: 10px; }
+.today-card, #difficultyView, .long-game, .contest-card, .activity-card, .history-card, .solved-card { margin-bottom: 24px; }
+.today-heading { display: flex; align-items: center; gap: 9px; }
+.today-heading .icon { width: 18px; height: 18px; color: var(--acc); }
+.today-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px; }
+.today-user { min-width: 0; }
+.today-grid .today-user + .today-user { position: relative; }
+.today-grid .today-user + .today-user::before { content: ''; position: absolute; left: -24px; top: 0; bottom: 0; width: 1px; background: #ffffff09; }
+.today-user .user-line { margin-bottom: 10px; }
+.solve-count { color: var(--user-color); font-size: 11px; margin-left: auto; }
+.today-list { display: grid; align-content: start; max-height: 266px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #3a4655 transparent; }
+.today-problem { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #ffffff07; padding: 13px 0; min-width: 0; }
+.today-problem:last-child { border-bottom: 0; }
+.today-problem .today-problem-info { flex: 1; min-width: 0; }
+.today-problem .problem-link { display: flex; flex-wrap: wrap; column-gap: 9px; row-gap: 2px; min-width: 0; }
+.today-problem .problem-id { flex: 0 0 auto; font-size: 10px; }
+.today-problem .problem-title { overflow-wrap: anywhere; font-size: 13px; }
+.today-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
+.today-tags .tag { margin: 0; white-space: normal; overflow-wrap: anywhere; font-size: 10px; padding: 2px 6px; color: color-mix(in srgb, var(--user-color) 30%, #a8b3c3); background: color-mix(in srgb, var(--user-color) 7%, var(--card)); }
+.today-problem .rating-chip { margin-left: auto; }
+.star { border: 0; background: transparent; color: #718092; font-size: 20px; padding: 5px; min-width: 34px; min-height: 34px; border-radius: 7px; transition: color .15s, background .15s; }
+.star[aria-pressed="true"] { color: var(--star); }
+.star:hover { background: #eac77f0c; color: var(--star); }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; margin: 15px 0; font-size: 11px; color: #b8c1ce; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; min-width: 0; overflow-wrap: anywhere; }
+.rating-graph { position: relative; overflow-x: auto; max-width: 100%; margin-top: 20px; scrollbar-width: thin; scrollbar-color: #465266 transparent; }
+.rating-graph svg { display: block; max-width: none; min-width: 100%; height: 260px; }
+.rating-graph g rect { opacity: .85; transition: opacity .15s; }
+.rating-graph g:hover rect { opacity: 1; }
+.graph-note { display: flex; justify-content: space-between; gap: 15px; font-size: 11px; color: #8996a7; margin-top: 6px; }
+.chart-data { margin-top: 14px; }
+.chart-data summary { display: inline-block; color: #adb7c6; font-size: 11px; cursor: pointer; border-bottom: 1px dotted #657083; padding-bottom: 2px; }
+.chart-data summary:hover { color: var(--txt); }
+.chart-data .rating-breakdown { margin-top: 12px; }
+.chart-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 24px; align-items: start; margin-bottom: 24px; }
+.chart-heading { margin-bottom: 17px; }
+.chart-heading .eyebrow { margin-bottom: 7px; }
+.chart-heading .eyebrow, #difficultyView .eyebrow { color: #a4b6d2; }
+.chart-heading h3 { margin-bottom: 5px; }
+#avg { line-height: 1.8; }
+.twrap { position: relative; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th, td { padding: 16px 12px; border-bottom: 1px solid #ffffff07; text-align: left; }
+th { color: #8d9aab; font-weight: 550; font-size: 10px; letter-spacing: .25px; }
+tr:last-child td, tr:last-child th { border-bottom: 0; }
+#difficultyView th { overflow-wrap: anywhere; }
+#difficultyView td { font: 13px var(--mono); }
+#difficultyView tbody th { font: 12px var(--mono); color: var(--txt); white-space: nowrap; }
+#difficultyView td:nth-child(2) { color: var(--acc); }
+#difficultyView td:nth-child(3) { color: var(--partner); }
+.rating-breakdown { max-height: 360px; overflow-y: auto; scrollbar-width: thin; }
+.rating-breakdown thead th { position: sticky; top: 0; background: var(--card); z-index: 1; }
+.rating-breakdown table { table-layout: fixed; }
+.rating-breakdown td, .rating-breakdown th { padding: 10px; }
+.rating-breakdown td:last-child { font-family: var(--mono); }
+.problem-table { min-width: 530px; }
+.problem-table th:first-child, .problem-table td:first-child { padding-left: 0; }
+.problem-table td:nth-child(2) { min-width: 225px; }
+.problem-link { display: flex; align-items: baseline; gap: 13px; font-weight: 500; }
+.problem-id { color: #8592a4; font: 11px var(--mono); flex: 0 0 60px; }
+.rating-chip { display: inline-block; border: 1px solid #ffffff0d; padding: 4px 9px; font: 11px var(--mono); border-radius: 6px; white-space: nowrap; }
+.tag { display: inline-block; color: #a8b3c3; background: #222a35; padding: 3px 7px; font-size: 10px; border-radius: 4px; margin: 2px; white-space: nowrap; }
+.problem-table tr:hover td { background: #ffffff02; }
+.empty-state { display: grid; justify-items: center; padding: 32px 18px; text-align: center; gap: 10px; }
+.empty-state .icon { width: 26px; height: 26px; color: var(--acc); opacity: .7; }
+.empty-state strong { font-weight: 550; font-size: 14px; color: var(--txt); }
+.empty-state p { max-width: 370px; color: var(--mut); font-size: 12px; }
+.today-empty { display: flex; align-items: center; gap: 10px; color: var(--mut); padding: 26px 0 15px; font-size: 12px; }
+.today-empty .icon { color: #718476; width: 16px; }
+.metric-row { margin-bottom: 20px; }
+.metric-row:last-child { margin-bottom: 0; }
+.metric-label { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #b6c0ce; font-size: 12px; margin-bottom: 9px; }
+.metric-label > span:last-child { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.metric-pair { display: grid; gap: 5px; }
+.metric-track { height: 5px; background: #252e3a; border-radius: 4px; overflow: hidden; }
+.metric-fill { height: 100%; background: var(--user-color, var(--acc)); opacity: .8; border-radius: 4px; }
+#cmpTable { margin-top: 23px; }
+#cmpTable h4 { color: #aeb9c9; font-size: 12px; margin-bottom: 20px; font-weight: 550; }
+.consistency-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 26px; padding-bottom: 26px; border-bottom: 1px solid #ffffff09; }
+.consistency-grid .metric-row { margin: 0; }
+.consistency-grid .metric-label { align-items: start; flex-direction: column; gap: 6px; }
+.consistency-grid .metric-label > span:last-child { font-size: 22px; letter-spacing: -.4px; }
+#comparisonTopics { margin-top: 24px; }
+.comparison-topic-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 42px; }
+.topic-toggle { margin-top: 12px; padding-left: 0; color: var(--acc); font-size: 11px; }
+.contest-card summary { display: flex; justify-content: space-between; align-items: center; gap: 15px; cursor: pointer; list-style: none; }
+.contest-card summary::-webkit-details-marker { display: none; }
+.contest-card summary .icon { transition: transform .2s; color: var(--mut); }
+.contest-card[open] summary .icon { transform: rotate(180deg); }
+.contest-card summary h3 { font-size: 16px; }
+.contest-card summary p { margin-top: 5px; }
+.contest-content { padding-top: 24px; }
+.contest-content .rhead { margin-bottom: 20px; }
+#chart svg { width: 100%; height: auto; display: block; margin: 15px 0; }
+.user-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card { padding: 20px; border-radius: 12px; background: linear-gradient(135deg, color-mix(in srgb, var(--stat-color) 5%, transparent), transparent 65%), var(--card); border-color: color-mix(in srgb, var(--stat-color) 12%, var(--card)); }
+.stat-card .stat-label { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: var(--mut); margin-bottom: 14px; }
+.stat-card b { font-size: 32px; letter-spacing: -1px; font-weight: 550; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat-card .icon { width: 16px; height: 16px; color: var(--stat-color, var(--acc)); }
+.stat-card small { display: block; color: #929eaf; font-size: 11px; margin-top: 10px; line-height: 1.55; }
+.tag-row { display: grid; grid-template-columns: 110px 1fr 30px; align-items: center; gap: 14px; margin: 18px 0; font-size: 12px; }
+.tag-row .tag-name { color: #b6c0ce; overflow-wrap: anywhere; }
+.tag-row b { font-size: 11px; font-variant-numeric: tabular-nums; font-weight: 400; text-align: right; color: #b5c0d0; }
+.hwrap { overflow-x: auto; scrollbar-width: thin; }
+.hinner { width: fit-content; min-width: 100%; }
+.hlabels, .hgrid { display: flex; gap: 6px; }
+.hlabels span, .hwk { width: 20px; flex: 1 0 20px; }
+.hlabels span { height: 25px; font-size: 10px; color: var(--mut); }
+.hwk { display: flex; flex-direction: column; gap: 6px; }
+.hgrid i { width: 100%; height: 16px; display: block; border-radius: 3px; background: var(--g0); }
+.hgrid i:hover { outline: 1px solid var(--acc); outline-offset: 2px; }
+.hleg { display: flex; align-items: center; justify-content: end; gap: 5px; margin-top: 16px; color: var(--mut); font-size: 10px; }
+.hleg i { display: block; width: 10px; height: 10px; border-radius: 2px; }
+.sbar { display: flex; align-items: center; gap: 14px; }
+.sbar input[type="search"] { width: 235px; font-size: 12px; }
+.sbar label { display: flex; align-items: center; gap: 6px; white-space: nowrap; margin: 0; }
+input[type="checkbox"] { accent-color: var(--acc); width: 15px; height: 15px; }
+.history-table { min-width: 480px; }
+.history-table td { font-variant-numeric: tabular-nums; }
+.history-table .week-label { white-space: nowrap; color: #b7c1d0; font-size: 12px; }
+.history-table .current-week td { color: var(--mut); background: #ffffff02; }
+.result-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; padding: 4px 9px; border-radius: 5px; background: color-mix(in srgb, var(--user-color, #8d9aaa) 8%, transparent); color: var(--user-color, #a8b3c3); overflow-wrap: anywhere; }
+.win-summary { display: flex; gap: 24px; flex-wrap: wrap; color: var(--mut); font-size: 12px; margin: 0 0 22px; }
+.win-summary strong { color: var(--txt); font-weight: 550; }
+footer { display: flex; justify-content: space-between; gap: 20px; padding: 6px 0 12px; color: #778597; font-size: 10px; }
+#side { color: var(--txt); background: var(--card); border: 1px solid #3a4655; border-radius: 18px; padding: 30px; width: min(460px, calc(100vw - 32px)); max-height: calc(100vh - 40px); overflow-y: auto; box-shadow: 0 24px 100px #0008; }
+#side::backdrop { background: #080c12c9; backdrop-filter: blur(5px); }
+.shead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 20px; }
+.shead h2 { font-size: 26px; letter-spacing: -.7px; }
+#sideUsers { display: grid; gap: 18px; margin: 26px 0; }
+#sideUsers label { display: flex; align-items: center; gap: 7px; }
+#handleSaveStatus { min-height: 32px; margin: 14px 0; color: var(--mut); font-size: 12px; }
+#sideSave { width: 100%; }
+.app.sidebar-collapsed { grid-template-columns: 64px minmax(0, 1fr); }
+.app.sidebar-collapsed .rail { padding: 24px 8px; }
+.app.sidebar-collapsed .brand { justify-content: center; padding: 0; }
+.app.sidebar-collapsed .brand-label, .app.sidebar-collapsed .rail-label, .app.sidebar-collapsed .rail-bottom, .app.sidebar-collapsed .nav-name { display: none; }
+.app.sidebar-collapsed #tabs { margin-top: 36px; }
+.app.sidebar-collapsed #tabs button { justify-content: center; padding: 12px; }
+.app.sidebar-collapsed #tabs button.on::before { left: -9px; }
+@keyframes pulse { 50% { opacity: .3; } }
+@media (min-width: 1500px) { .workspace { padding-left: 48px; padding-right: 48px; } }
+@media (max-width: 1150px) {
+  .app { grid-template-columns: 180px minmax(0, 1fr); }
+  .rail { padding-left: 12px; padding-right: 12px; }
+  #tabs button.on::before { left: -13px; }
+  .workspace { padding-left: 25px; padding-right: 25px; }
+  .sync-status { max-width: 145px; }
+  .week-cards { gap: 42px; }
+  .strip { gap: 18px; }
+  .week-user .stat:first-child b { font-size: 42px; }
+  .chart-grid { grid-template-columns: 1fr; }
+  .hero-date { display: none; }
+}
+@media (max-width: 760px) {
+  .app, .app.sidebar-collapsed { display: block; }
+  .rail { position: static; height: auto; padding: 18px 18px 12px; border-right: 0; border-bottom: 1px solid #ffffff08; }
+  .rail-label, .rail-bottom { display: none; }
+  .brand { font-size: 15px; padding: 0; }
+  .brand small { display: none; }
+  .brand-mark { width: 28px; height: 29px; font-size: 15px; border-radius: 8px; }
+  #tabs { display: flex; gap: 6px; margin-top: 15px; overflow-x: auto; }
+  #tabs button { width: auto; flex: 0 0 auto; padding: 9px 12px; white-space: nowrap; font-size: 12px; }
+  #tabs button.on::before { display: none; }
+  #tabs .nav-name { max-width: 125px; }
+  .app.sidebar-collapsed .rail { display: none; }
+  .workspace { padding: 0 16px 20px; }
+  .topbar { min-height: 62px; gap: 6px; }
+  .breadcrumb { display: none; }
+  .top-actions { min-width: 0; flex: 1; gap: 4px; justify-content: flex-end; }
+  .sync-status { max-width: 40%; font-size: 10px; margin-right: auto; }
+  #menuBtn { padding: 8px; font-size: 11px; gap: 6px; }
+  #syncAll { padding: 9px; }
+  #syncAll .button-text { display: none; }
+  .hero { padding: 25px 0 23px; }
+  .hero h1 { font-size: 30px; margin-top: 7px; }
+  .hero-copy { font-size: 12px; }
+  .hero .eyebrow { font-size: 9px; }
+  .card { padding: 20px; border-radius: 12px; }
+  h3 { font-size: 17px; }
+  #weeklyView { padding: 22px 18px 18px; margin-bottom: 18px; }
+  #weeklyView .section-heading { gap: 10px; margin-bottom: 22px; }
+  .week-range { font-size: 10px; }
+  .race-heading { gap: 7px; }
+  .race-heading > .icon { width: 16px; }
+  .week-select { padding: 7px; font-size: 11px; }
+  .week-cards { gap: 26px; }
+  .week-cards::after { top: 30%; width: 24px; height: 24px; font-size: 8px; }
+  .user-line { gap: 7px; }
+  .user-line h4 { font-size: 12px; }
+  .avatar { width: 27px; height: 29px; border-radius: 8px; font-size: 10px; }
+  .mini-tag { display: none; }
+  .week-user .strip { gap: 12px; margin: 17px 0; }
+  .week-user .stat:first-child { flex: 0 0 100%; }
+  .week-user .stat:first-child b { font-size: clamp(30px, 8.8vw, 42px); letter-spacing: -1.4px; }
+  .week-user .stat:not(:first-child) b { font-size: 17px; }
+  .stat span { font-size: 10px; }
+  .week-days { gap: 3px; }
+  .day { font-size: 8px; }
+  .day-box { height: 19px; font-size: 8px; border-radius: 3px; }
+  .race-progress { margin-top: 19px; }
+  .race-footer { align-items: start; flex-direction: column; gap: 7px; }
+  .week-summary { font-size: 11px; }
+  .race-footer .card-note { text-align: left; font-size: 9px; }
+  .today-card, #difficultyView, .long-game, .contest-card, .activity-card, .history-card, .solved-card { margin-bottom: 18px; }
+  .today-grid { grid-template-columns: 1fr; gap: 24px; }
+  .today-grid .today-user + .today-user { border-top: 1px solid #ffffff0b; padding-top: 20px; }
+  .today-grid .today-user + .today-user::before { display: none; }
+  .today-problem { gap: 7px; }
+  .today-problem .problem-title { font-size: 12px; }
+  .today-problem .rating-chip { padding: 4px 6px; font-size: 10px; }
+  .today-tags .tag { font-size: 9px; }
+  .today-list { max-height: 248px; }
+  .today-heading .icon { width: 16px; }
+  .section-heading { gap: 9px; margin-bottom: 18px; }
+  .section-heading > .mut { font-size: 11px; }
+  .user-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .stat-card { padding: 17px; }
+  .stat-card .stat-label { font-size: 11px; }
+  .stat-card b { font-size: 28px; }
+  .stat-card small { font-size: 10px; }
+  .chart-grid { gap: 18px; margin-bottom: 18px; }
+  .tag-row { margin: 16px 0; font-size: 11px; }
+  .graph-note { flex-direction: column; gap: 2px; font-size: 10px; }
+  .consistency-grid { grid-template-columns: 1fr 1fr; gap: 22px; }
+  .consistency-grid .metric-label > span:last-child { font-size: 20px; }
+  .comparison-topic-grid { grid-template-columns: 1fr; }
+  .metric-label { font-size: 11px; }
+  .sbar { width: 100%; }
+  .sbar input[type="search"] { width: 100%; }
+  .solved-card .section-heading { align-items: start; }
+  .history-table { min-width: 0; table-layout: fixed; }
+  .history-table th, .history-table td { padding: 12px 4px; overflow-wrap: anywhere; font-size: 10px; }
+  .history-table th:first-child { width: 37%; }
+  .history-table .week-label { white-space: normal; font-size: 10px; }
+  .result-badge { padding: 3px 5px; font-size: 9px; }
+  .win-summary { gap: 14px; font-size: 11px; }
+  footer { flex-wrap: wrap; gap: 7px; font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<dialog id="side" aria-labelledby="settingsTitle">
+  <div class="shead"><h2 id="settingsTitle">Your duo.</h2><button class="btn btn-ghost" id="sideClose" aria-label="Close settings">✕</button></div>
+  <p class="mut">Add your Codeforces handles once. Come back to your practice room whenever you’re ready.</p>
+  <form id="handlesForm">
+    <div id="sideUsers"></div>
+    <p id="handleSaveStatus" role="status"></p>
+    <button class="btn btn-primary" id="sideSave" type="submit">Save & sync</button>
+  </form>
+</dialog>
+<div class="app">
+  <aside class="rail" id="workspaceRail" aria-label="Workspace navigation">
+    <a class="brand" href="#" id="brandHome"><span class="brand-mark" aria-hidden="true">&gt;_</span><span class="brand-label">CP Tracker<small>ICPC PRACTICE</small></span></a>
+    <div class="eyebrow rail-label">Your duo</div>
+    <nav id="tabs" aria-label="Dashboard and teammate profiles"></nav>
+    <div class="rail-bottom"><div class="eyebrow">Weekly reset</div><p class="mut" style="margin-top:6px">Monday, 00:00 IST</p></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar">
+      <button class="btn btn-ghost" id="sidebarToggle" aria-controls="workspaceRail" aria-expanded="true" aria-label="Collapse sidebar"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
+      <div class="breadcrumb">Practice <span>/</span> <b id="pageLabel">OVERVIEW</b></div>
+      <div class="top-actions">
+        <div class="sync-status" id="syncStatus" data-state="loading"><span class="status-dot" aria-hidden="true"></span><span id="sync" role="status">Getting ready…</span></div>
+        <button class="btn btn-ghost" id="menuBtn"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3a4 4 0 0 1 0 8M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>Manage duo</button>
+        <button class="btn btn-primary" id="syncAll" aria-label="Sync both Codeforces histories"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6.09 7a7 7 0 0 1 11.55-2L20 8M4 16l2.36 3A7 7 0 0 0 17.91 17"/></svg><span class="button-text">Sync now</span></button>
+      </div>
+    </header>
+    <main>
+      <section class="hero" aria-labelledby="heroTitle">
+        <div><div class="eyebrow" id="heroEyebrow">CP TRACKER</div><h1 id="heroTitle">Team overview</h1><p class="hero-copy" id="heroCopy">A little competition. A shared goal.</p></div><div class="hero-date" id="heroDate"></div>
+      </section>
+      <section id="compareView" aria-label="Team dashboard">
+        <div class="card" id="weeklyView"></div>
+        <div class="card today-card" id="todayView"></div>
+        <div class="card" id="difficultyView"></div>
+        <div class="card long-game"><div class="section-heading"><div><h3>All-time comparison</h3></div><span class="mut">All-time history</span></div><div class="legend" id="comparisonLegend"></div><div id="cmpTable"></div></div>
+        <details class="card contest-card" id="contestPanel">
+          <summary><div><h3>Contest performance</h3><p class="mut">Ratings, peaks, and your contest history.</p></div><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+          <div class="contest-content"><div class="rhead"><p class="mut" id="cfMsg" role="status">Compare ratings and contest history when you’re ready.</p><button class="btn" id="fetchCF">Fetch ratings</button></div><div id="chart"></div><div class="twrap" id="cfTable"></div></div>
+        </details>
+        <div class="card history-card" id="weeklyHistoryView"></div>
+      </section>
+      <section id="userView" style="display:none" aria-label="Individual progress"></section>
+      <footer><span>Public Codeforces history · first acceptance per problem</span><span>Weekly reset · Monday 00:00 IST</span></footer>
+    </main>
+  </div>
+</div>
+<script>
+// ---- configuration: two teammates, optional Firebase shared storage ----
+const USERS = [{ id: 'u1', name: 'You', cf: '' }, { id: 'u2', name: 'Teammate', cf: '' }];
+const FIREBASE_CONFIG = {};
+const TRACKER_TIMEZONE = 'Asia/Kolkata';
+const DAY_MS = 864e5;
+const PERIODS = [['30', 'Last month'], ['91', 'Last 3 months'], ['182', 'Last 6 months'], ['365', 'Last year'], ['all', 'All time']];
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ICONS = {
+  trophy: '<path d="M8 3h8v5a4 4 0 0 1-8 0V3ZM8 5H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4M12 12v5m-4 4h8m-7-4h6v4H9z"/>',
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18"/>',
+  arrow: '<path d="M5 12h14m-6-6 6 6-6 6"/>',
+  external: '<path d="M14 3h7v7m0-7L10 14M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5"/>',
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  code: '<path d="m8 7-5 5 5 5m8-10 5 5-5 5m-3-13-2 16"/>',
+  check: '<path d="m5 12 4 4L19 6"/>',
+  flame: '<path d="M12 3c2 5 6 6 6 12a6 6 0 0 1-12 0c0-3 1-5 3-7 0 3 1 4 2 4 2-2 2-5 1-9Z"/>',
+  star: '<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/>',
+};
+const icon = name => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ICONS.code}</svg>`;
+const trackerDate = date => {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: TRACKER_TIMEZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(date);
+  const part = type => parts.find(p => p.type === type).value;
+  return `${part('year')}-${part('month')}-${part('day')}`;
+};
+const dstr = ts => trackerDate(new Date(ts * 1000));
+const today = () => trackerDate(new Date());
+const shiftDate = (date, days) => new Date(Date.parse(date + 'T00:00:00Z') + days * DAY_MS).toISOString().slice(0, 10);
+const problemKey = p => `${p.cid}-${p.idx}`;
+const LS_M = 'cp-marks-v1', LS_H = 'cp-handles-v1', LS_PREF = 'cp-preferences-v1';
+let storageAvailable = true;
+function readStored(key) {
+  try { const value = JSON.parse(localStorage.getItem(key)); return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+  catch { return {}; }
+}
+function writeStored(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); storageAvailable = true; return true; }
+  catch { storageAvailable = false; return false; }
+}
+const preferences = readStored(LS_PREF);
+let active = preferences.active === '__cmp' || USERS.some(u => u.id === preferences.active) ? preferences.active : '__cmp';
+let period = 'all', solved = {}, syncState = {};
+let marks = readStored(LS_M);
+let handles = Object.fromEntries(USERS.map(u => [u.id, u.cf]));
+// Always restore browser storage, including when Firebase is configured or unavailable.
+const savedHandles = readStored(LS_H);
+USERS.forEach(u => { if (typeof savedHandles[u.id] === 'string') handles[u.id] = savedHandles[u.id].trim(); });
+let useFB = Object.keys(FIREBASE_CONFIG).length > 0, db = null;
+let syncing = false, syncQueued = false, fetchingRatings = false;
+let weekOffset = 0, historyLimit = 12;
+let sidebarCollapsed = preferences.sidebarCollapsed === true;
+const expandedTopics = new Set();
+let compareTopicsExpanded = false;
+let fq = '', fStarOnly = false;
+const userLabel = u => handles[u.id] || u.name;
+const userColor = u => USERS.indexOf(u) === 1 ? 'var(--partner)' : 'var(--acc)';
+const avatar = u => `<span class="avatar" aria-hidden="true">${esc(userLabel(u).slice(0, 2).toUpperCase())}</span>`;
+const hasSynced = u => !!handles[u.id] && syncState[u.id]?.status === 'ready' && syncState[u.id].handle === handles[u.id];
+const historyFor = u => syncState[u.id]?.handle === handles[u.id] ? solved[u.id] || [] : [];
+const mid = (u, c, i) => `${u}_${c}_${i}`;
+const isStar = (u, p) => !!marks[mid(u, p.cid, p.idx)]?.starred;
+const cutoff = () => period === 'all' ? '' : shiftDate(today(), -Number(period));
+const inP = (p, c) => !c || p.date >= c;
+const filtered = u => historyFor(u).filter(p => (!fStarOnly || isStar(u.id, p)) && (!fq || p.name.toLowerCase().includes(fq.toLowerCase()) || p.tags.join(' ').toLowerCase().includes(fq.toLowerCase())));
+const problemTitle = p => p.name.startsWith(problemKey(p) + ' · ') ? p.name.slice(problemKey(p).length + 3) : p.name;
+const ratingColor = rating => rating == null || rating === 'unrated' ? '#9aa4b2' : rating < 1200 ? '#a7b1bf' : rating < 1400 ? '#76c398' : rating < 1600 ? '#6dc8c6' : rating < 1900 ? '#83abed' : rating < 2100 ? '#b39ae0' : rating < 2400 ? '#dfb27d' : '#e38f99';
+const ratingChip = p => `<span class="rating-chip ${p.rating == null ? 'unrated' : ''}" style="color:${ratingColor(p.rating)};background:color-mix(in srgb, ${ratingColor(p.rating)} 12%, transparent)">${p.rating ?? 'Unrated'}</span>`;
+const emptyHTML = (title, description) => `<div class="empty-state">${icon('code')}<strong>${esc(title)}</strong><p>${esc(description)}</p></div>`;
+function savePreferences() { writeStored(LS_PREF, { active, sidebarCollapsed }); }
+function applySidebar() {
+  document.querySelector('.app').classList.toggle('sidebar-collapsed', sidebarCollapsed);
+  $('sidebarToggle').setAttribute('aria-expanded', String(!sidebarCollapsed));
+  $('sidebarToggle').setAttribute('aria-label', sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar');
+}
+function setStatus(text, state = 'ready') { $('sync').textContent = text; $('syncStatus').dataset.state = state; }
+
+// ---- local-first persistence; Firebase only adds optional cross-browser sync ----
+async function initFB() {
+  if (!useFB) return;
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    await firebase.auth().signInAnonymously();
+    db = firebase.firestore();
+    db.collection('marks').onSnapshot(snapshot => {
+      marks = {};
+      snapshot.forEach(d => { marks[d.id] = d.data(); });
+      writeStored(LS_M, marks);
+      render();
+    }, () => { setStatus('Cloud stars unavailable; saved on this browser.', 'error'); });
+    db.doc('meta/handles').onSnapshot(d => {
+      if (!d.exists) return;
+      const data = d.data();
+      const changed = USERS.some(u => typeof data[u.id] === 'string' && data[u.id] !== handles[u.id]);
+      USERS.forEach(u => { if (typeof data[u.id] === 'string') handles[u.id] = data[u.id].trim(); });
+      writeStored(LS_H, handles);
+      // Do not replace fields while somebody is typing in the settings dialog.
+      if (!$('side').open) paintSide();
+      render();
+      if (changed) syncAll();
+    }, () => { setStatus('Cloud handles unavailable; using browser-saved duo.', 'error'); });
+  } catch {
+    useFB = false; db = null;
+    setStatus('Cloud unavailable; your duo is saved here.', 'error');
+  }
+}
+async function setStar(u, p, on) {
+  const id = mid(u, p.cid, p.idx);
+  if (on) marks[id] = { starred: true }; else delete marks[id];
+  if (!writeStored(LS_M, marks)) setStatus('Browser storage blocked; stars cannot survive a reload.', 'error');
+  if (useFB && db) {
+    try {
+      if (on) await db.collection('marks').doc(id).set({ userId: u, cid: p.cid, idx: p.idx, starred: true, at: Date.now() });
+      else await db.collection('marks').doc(id).delete();
+    } catch { setStatus('Star saved here; cloud sync failed.', 'error'); }
+  }
+}
+async function persistHandles() {
+  const saved = writeStored(LS_H, handles);
+  $('handleSaveStatus').textContent = saved ? 'Saved on this browser. They’ll be here next time.' : 'Browser storage is blocked. Allow site storage to remember your handles.';
+  if (useFB && db) {
+    try { await db.doc('meta/handles').set(handles, { merge: true }); }
+    catch { setStatus('Duo saved here; cloud sync failed.', 'error'); }
+  }
+  await syncAll();
+}
+function paintSide() {
+  $('sideUsers').innerHTML = USERS.map(u => `<div><label for="handle-${u.id}"><span class="nav-dot" style="--user-color:${userColor(u)}"></span>${esc(u.name)} · Codeforces handle</label><input id="handle-${u.id}" data-sh="${u.id}" value="${esc(handles[u.id] || '')}" placeholder="Your Codeforces handle" autocomplete="off" autocapitalize="none" spellcheck="false"></div>`).join('');
+  $('handleSaveStatus').textContent = 'Handles are saved automatically on this browser as you type.';
+}
+function openSettings() { paintSide(); $('side').showModal(); }
+function closeSide() { $('side').close(); render(); }
+$('sideUsers').oninput = e => {
+  const id = e.target.dataset.sh;
+  if (!USERS.some(u => u.id === id)) return;
+  handles[id] = e.target.value.trim();
+  const saved = writeStored(LS_H, handles);
+  $('handleSaveStatus').textContent = saved ? 'Saved on this browser. Hit Save & sync to refresh your progress.' : 'Browser storage is blocked. Allow site storage to remember your handles.';
+  paintTabs();
+};
+$('handlesForm').onsubmit = async e => {
+  e.preventDefault();
+  document.querySelectorAll('#sideUsers [data-sh]').forEach(input => { handles[input.dataset.sh] = input.value.trim(); });
+  $('cfTable').innerHTML = ''; $('chart').innerHTML = '';
+  $('cfMsg').textContent = 'Compare ratings and contest history when you’re ready.';
+  writeStored(LS_H, handles);
+  closeSide();
+  await persistHandles();
+};
+
+// ---- paged Codeforces sync; each problem belongs to its first accepted date ----
+async function syncUser(u) {
+  const h = handles[u.id];
+  if (!h) { solved[u.id] = []; syncState[u.id] = { handle: h, status: 'empty' }; return; }
+  const seen = new Map();
+  for (let from = 1; ; from += 10000) {
+    const response = await fetch(`https://codeforces.com/api/user.status?handle=${encodeURIComponent(h)}&from=${from}&count=10000`);
+    const r = await response.json();
+    if (r.status !== 'OK' || !Array.isArray(r.result)) throw new Error(r.comment || 'CF error');
+    for (const s of r.result) {
+      if (s.verdict !== 'OK' || s.problem?.contestId == null || !s.problem.index) continue;
+      const p = s.problem, key = `${p.contestId}-${p.index}`;
+      if (!seen.has(key) || s.creationTimeSeconds < seen.get(key).acceptedAt) {
+        seen.set(key, { cid: p.contestId, idx: p.index, name: p.name ? `${key} · ${p.name}` : key, url: `https://codeforces.com/problemset/problem/${p.contestId}/${p.index}`, tags: p.tags || [], rating: p.rating ?? null, date: dstr(s.creationTimeSeconds), acceptedAt: s.creationTimeSeconds });
+      }
+    }
+    if (r.result.length < 10000) break;
+  }
+  if (handles[u.id] !== h) return;
+  solved[u.id] = [...seen.values()].sort((a, b) => b.date.localeCompare(a.date));
+  syncState[u.id] = { handle: h, status: 'ready' };
+}
+async function syncAll() {
+  if (syncing) { syncQueued = true; return; }
+  syncing = true;
+  $('syncAll').disabled = true; $('sideSave').disabled = true;
+  USERS.forEach(u => {
+    if (syncState[u.id]?.handle !== handles[u.id]) solved[u.id] = [];
+    syncState[u.id] = { handle: handles[u.id], status: handles[u.id] ? 'loading' : 'empty' };
+  });
+  setStatus(USERS.some(u => handles[u.id]) ? 'Syncing Codeforces…' : 'Add your duo to get started.', 'loading');
+  render();
+  try {
+    const results = await Promise.allSettled(USERS.map(syncUser));
+    const failed = [];
+    results.forEach((result, i) => {
+      if (result.status === 'rejected') { syncState[USERS[i].id].status = 'error'; failed.push(userLabel(USERS[i])); }
+    });
+    if (failed.length) setStatus(`Couldn’t sync ${failed.join(', ')}. Try again.`, 'error');
+    else if (!USERS.some(u => handles[u.id])) setStatus('Your duo starts here.');
+    else setStatus(`Updated ${new Intl.DateTimeFormat('en-IN', { timeZone: TRACKER_TIMEZONE, hour: '2-digit', minute: '2-digit' }).format(new Date())}`);
+  } finally {
+    syncing = false;
+    $('syncAll').disabled = false; $('sideSave').disabled = false;
+    render();
+    if (syncQueued) { syncQueued = false; await syncAll(); }
+  }
+}
+
+// ---- shared dates and statistics ----
+function streak(dates) {
+  const set = new Set(dates), t = Date.parse(today() + 'T00:00:00Z');
+  let cur = 0, d = set.has(today()) ? t : t - DAY_MS;
+  while (set.has(new Date(d).toISOString().slice(0, 10))) { cur++; d -= DAY_MS; }
+  let best = 0, run = 0, prev = 0;
+  for (const s of [...set].sort()) { const x = Date.parse(s + 'T00:00:00Z'); run = x - prev === DAY_MS ? run + 1 : 1; best = Math.max(best, run); prev = x; }
+  return { cur, best };
+}
+function weekRange(offset = weekOffset, date = today()) {
+  const weekday = new Date(date + 'T00:00:00Z').getUTCDay();
+  const start = shiftDate(date, -((weekday + 6) % 7) - offset * 7);
+  return { start, end: shiftDate(start, 7) };
+}
+function ratingCounts(problems) {
+  const counts = {};
+  problems.forEach(p => { const key = p.rating == null ? 'unrated' : String(p.rating); counts[key] = (counts[key] || 0) + 1; });
+  return counts;
+}
+function ratingKeys(counts) {
+  const keys = [...new Set(counts.flatMap(c => Object.keys(c)))];
+  return keys.filter(k => k !== 'unrated').sort((a, b) => Number(a) - Number(b)).concat(keys.includes('unrated') ? ['unrated'] : []);
+}
+const formatScore = value => new Intl.NumberFormat('en-IN', { maximumFractionDigits: 1 }).format(value);
+function weeklyStats(problems, range) {
+  const list = problems.filter(p => p.date >= range.start && p.date < range.end), days = {};
+  list.forEach(p => { days[p.date] = (days[p.date] || 0) + 1; });
+  const totalRating = list.reduce((total, p) => total + (p.rating ?? 0), 0);
+  return { count: list.length, activeDays: Object.keys(days).length, ratings: ratingCounts(list), days, score: totalRating / 10 };
+}
+function weekOutcome(stats) {
+  if (!stats.some(s => s.count)) return { status: 'inactive', winner: null };
+  const max = Math.max(...stats.map(s => s.score)), leaders = stats.map((s, i) => s.score === max ? i : -1).filter(i => i >= 0);
+  return leaders.length === 1 ? { status: 'winner', winner: USERS[leaders[0]].id } : { status: 'tie', winner: null };
+}
+function buildWeeklyHistory(histories, date = today()) {
+  const current = weekRange(0, date).start, grouped = new Map();
+  let earliest = current;
+  histories.forEach((problems, i) => problems.forEach(p => {
+    if (p.date > date) return;
+    const start = weekRange(0, p.date).start;
+    if (start < earliest) earliest = start;
+    if (!grouped.has(start)) grouped.set(start, USERS.map(() => ({ count: 0, totalRating: 0 })));
+    const stat = grouped.get(start)[i];
+    stat.count++; stat.totalRating += p.rating ?? 0;
+  }));
+  const rows = [];
+  for (let start = current; start >= earliest; start = shiftDate(start, -7)) {
+    const stats = (grouped.get(start) || USERS.map(() => ({ count: 0, totalRating: 0 }))).map(s => ({ count: s.count, score: s.totalRating / 10 }));
+    const outcome = start === current ? { status: 'current', winner: null } : weekOutcome(stats);
+    rows.push({ start, end: shiftDate(start, 6), stats, ...outcome });
+  }
+  return rows;
+}
+function syncHint(u) {
+  if (!handles[u.id]) return 'Add your handle to start.';
+  if (syncState[u.id]?.status === 'loading') return 'Loading your history…';
+  if (syncState[u.id]?.status === 'error') return 'Sync failed. Check your handle or retry.';
+  return 'Sync your handle to load progress.';
+}
+function heatHTML(dates) {
+  const counts = {};
+  dates.forEach(d => { counts[d] = (counts[d] || 0) + 1; });
+  const level = n => n === 0 ? 0 : n === 1 ? 1 : n === 2 ? 2 : n <= 4 ? 3 : 4;
+  // End on the current week, so today's first solve is always visible.
+  const current = new Date(today() + 'T00:00:00Z');
+  const start = shiftDate(today(), -current.getUTCDay() - 25 * 7);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  let previousMonth = -1, labels = '', weeks = '';
+  for (let w = 0; w < 26; w++) {
+    let column = '';
+    for (let d = 0; d < 7; d++) {
+      const date = shiftDate(start, w * 7 + d), n = counts[date] || 0;
+      if (d === 0) { const m = new Date(date + 'T00:00:00Z').getUTCMonth(); labels += `<span>${m !== previousMonth ? months[m] : ''}</span>`; previousMonth = m; }
+      column += `<i title="${date}: ${n} new solves" style="background:var(--g${level(n)});${date > today() ? 'opacity:.3' : ''}"></i>`;
+    }
+    weeks += `<div class="hwk">${column}</div>`;
+  }
+  return `<div class="hwrap"><div class="hinner" role="img" aria-label="Activity over 26 weeks. ${dates.filter(d => d === today()).length} new solves today. Each square represents a day."><div class="hlabels" aria-hidden="true">${labels}</div><div class="hgrid" aria-hidden="true">${weeks}</div><div class="hleg" aria-hidden="true">Less ${[0, 1, 2, 3, 4].map(i => `<i style="background:var(--g${i})"></i>`).join('')} More</div></div></div>`;
+}
+
+// ---- navigation and page headings ----
+function paintTabs() {
+  $('tabs').innerHTML = `<button title="Overview" aria-label="Overview" data-u="__cmp" class="${active === '__cmp' ? 'on' : ''}" ${active === '__cmp' ? 'aria-current="page"' : ''}>${icon('grid')}<span class="nav-name">Overview</span></button>` + USERS.map(u => `<button title="${esc(userLabel(u))}" aria-label="${esc(userLabel(u))}" data-u="${u.id}" class="${u.id === active ? 'on' : ''}" ${active === u.id ? 'aria-current="page"' : ''}><span class="nav-dot" style="--user-color:${userColor(u)}"></span><span class="nav-name">${esc(userLabel(u))}</span></button>`).join('');
+}
+function renderHero() {
+  const user = USERS.find(u => u.id === active);
+  $('pageLabel').textContent = user ? userLabel(user) : 'Overview';
+  $('heroEyebrow').textContent = user ? 'YOUR PROGRESS' : 'TWO TEAMMATES · ONE TEAM';
+  $('heroTitle').textContent = user ? `${userLabel(user)}’s practice.` : 'Head to head.';
+  $('heroCopy').textContent = user ? 'The problems, the patterns, and the progress.' : 'A little competition. A shared goal.';
+  $('heroDate').innerHTML = icon('calendar') + esc(new Intl.DateTimeFormat('en-IN', { timeZone: TRACKER_TIMEZONE, weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date()));
+}
+// Each column is one exact rating; scroll instead of grouping categories.
+function ratingGraphHTML(keys, series, containerId) {
+  if (!keys.length) return '';
+  const height = 260, left = 36, right = 16, top = 32, bottom = 42;
+  const container = $(containerId), style = getComputedStyle(container);
+  const available = container.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+  const width = Math.max(360, available, keys.length * (series.length > 1 ? 54 : 44) + left + right);
+  const plotHeight = height - top - bottom, slot = (width - left - right) / keys.length;
+  const max = Math.max(1, ...series.flatMap(s => keys.map(key => s.counts?.[key] || 0)));
+  const step = Math.max(1, Math.ceil(max / 4)), tickCount = Math.ceil(max / step), ceiling = step * tickCount;
+  const y = count => height - bottom - count / ceiling * plotHeight;
+  let svg = '';
+  for (let i = 0; i <= tickCount; i++) {
+    const count = i * step;
+    svg += `<line x1="${left}" x2="${width - right}" y1="${y(count)}" y2="${y(count)}" stroke="var(--line)"/><text x="${left - 9}" y="${y(count) + 4}" text-anchor="end" fill="var(--mut)" font-size="11">${count}</text>`;
+  }
+  keys.forEach((key, index) => {
+    const center = left + (index + .5) * slot, label = key === 'unrated' ? 'Unrated' : key;
+    const barWidth = Math.min(26, (slot - 16) / series.length), gap = series.length > 1 ? 4 : 0;
+    series.forEach((s, i) => {
+      if (!s.counts) return;
+      const count = s.counts[key] || 0;
+      const x = center - (series.length * barWidth + (series.length - 1) * gap) / 2 + i * (barWidth + gap);
+      const color = s.color || ratingColor(key);
+      svg += `<g data-rating="${esc(key)}" data-series="${esc(s.label)}"><title>${esc(s.label)} · ${esc(label)}: ${count} solved</title><rect x="${x}" y="${y(count)}" width="${barWidth}" height="${count / ceiling * plotHeight}" rx="3" fill="${color}"/><text x="${x + barWidth / 2}" y="${y(count) - 7}" text-anchor="middle" fill="${color}" font-size="11">${count}</text></g>`;
+    });
+    svg += `<text x="${center}" y="${height - bottom + 21}" text-anchor="middle" fill="${ratingColor(key)}" font-size="11">${esc(label)}</text>`;
+  });
+  return `${series.length > 1 ? `<div class="legend">${series.map(s => `<span><i class="nav-dot" style="--user-color:${s.color}"></i>${esc(s.label)}${s.counts ? '' : ' · not synced'}</span>`).join('')}</div>` : ''}<div class="rating-graph" tabindex="0" aria-label="Scroll through all exact problem ratings"><svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Solved problem counts by exact rating for ${esc(series.map(s => s.label).join(' and '))}" style="font-family:var(--mono)">${svg}</svg></div><div class="graph-note"><span>Problem rating · ${keys.length} exact ratings</span><span>${width > available + 1 ? 'Scroll to see all ratings →' : 'Each bar shows solved problems'}</span></div>`;
+}
+
+function renderWeekly() {
+  const range = weekRange(), stats = USERS.map(u => hasSynced(u) ? weeklyStats(historyFor(u), range) : null);
+  const ready = stats.every(Boolean) && USERS.length > 1;
+  const outcome = ready ? weekOutcome(stats) : null;
+  const winningUser = outcome?.winner ? USERS.find(u => u.id === outcome.winner) : null;
+  const highScore = ready ? Math.max(...stats.map(s => s.score)) : 0;
+  const summary = !ready ? 'Sync both handles to compare scores.' : outcome.status === 'inactive' ? 'No solves recorded for this week.' : outcome.status === 'tie' ? `Tied at ${formatScore(highScore)} points.` : `${userLabel(winningUser)} ${weekOffset === 0 ? 'leads' : 'won'} with ${formatScore(highScore)} points.`;
+  const totalScore = stats.reduce((sum, stat) => sum + (stat?.score || 0), 0);
+  const dateLabel = date => new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(date + 'T00:00:00Z'));
+  $('weeklyView').innerHTML = `
+    <div class="section-heading"><div><div class="race-heading">${icon('trophy')}<h3>Weekly race</h3></div><div class="week-range">${dateLabel(range.start)} — ${dateLabel(shiftDate(range.end, -1))} · resets Monday · IST</div></div><label class="sr-only" for="weekSelect">Week</label><select class="week-select" id="weekSelect"><option value="0" ${weekOffset === 0 ? 'selected' : ''}>This week</option><option value="1" ${weekOffset === 1 ? 'selected' : ''}>Last week</option></select></div>
+    <div class="week-cards">${USERS.map((u, i) => `<div class="week-user ${winningUser?.id === u.id ? 'leading' : ''}" style="--user-color:${userColor(u)}"><div class="user-line">${avatar(u)}<h4 title="${esc(userLabel(u))}">${esc(userLabel(u))}</h4>${winningUser?.id === u.id ? `<span class="mini-tag">${weekOffset ? 'WINNER' : 'LEADING'}</span>` : ''}</div>${stats[i] ? `<div class="strip"><div class="stat"><b>${formatScore(stats[i].score)}</b><span>points</span></div><div class="stat"><b>${stats[i].count}</b><span>solves</span></div><div class="stat"><b>${stats[i].activeDays}/7</b><span>active days</span></div></div><div class="week-days">${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, j) => { const date = shiftDate(range.start, j), count = stats[i].days[date] || 0; return `<div class="day ${count ? 'done' : ''} ${date > today() ? 'future' : ''}" title="${date}: ${count} new solves"><div class="day-box">${count || ''}</div>${day}</div>`; }).join('')}</div>` : `<div class="empty-state"><p>${esc(syncHint(u))}</p></div>`}</div>`).join('')}</div>
+    ${ready ? `<div class="race-progress" role="img" aria-label="Share of weekly points: ${esc(USERS.map((u, i) => `${userLabel(u)} ${formatScore(stats[i].score)} points`).join(', '))}">${USERS.map((u, i) => `<span style="--user-color:${userColor(u)};width:${totalScore ? stats[i].score / totalScore * 100 : 0}%"></span>`).join('')}</div>` : ''}
+    <div class="race-footer"><p class="week-summary" role="status">${esc(summary)}</p><p class="card-note">Score = rating ÷ 10 per new solve. Unrated problems earn 0 points.</p></div>`;
+  const keys = ratingKeys(stats.filter(Boolean).map(s => s.ratings));
+  $('difficultyView').innerHTML = `<div class="section-heading"><div><div class="eyebrow">Difficulty distribution</div><h3>Weekly solves by rating</h3></div><span class="mut">Every rating, individually</span></div><p class="mut">${weekOffset ? 'Last week' : 'This week'} · each exact rating</p>${keys.length ? ratingGraphHTML(keys, USERS.map((u, i) => ({ label: userLabel(u), counts: stats[i]?.ratings, color: userColor(u) })), 'difficultyView') + `<details class="chart-data"><summary>View exact counts</summary><div class="rating-breakdown twrap"><table><thead><tr><th scope="col">Rating</th>${USERS.map(u => `<th scope="col">${esc(userLabel(u))}</th>`).join('')}</tr></thead><tbody>${keys.map(key => `<tr><th scope="row">${key === 'unrated' ? 'Unrated' : esc(key)}</th>${stats.map(s => `<td>${s ? s.ratings[key] || 0 : '—'}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>` : emptyHTML(ready ? 'No solves in this week.' : 'Waiting for synced histories.', 'The graph will appear after accepted problems are synced.')}`;
+  $('weekSelect').onchange = e => { weekOffset = Number(e.target.value); renderWeekly(); };
+}
+function renderWeeklyHistory() {
+  const view = $('weeklyHistoryView');
+  if (!USERS.every(hasSynced)) { view.innerHTML = `<h3>Weekly results</h3>${emptyHTML('Sync both handles to see results.', 'Completed weeks will show both scores and the winner.')} `; return; }
+  const rows = buildWeeklyHistory(USERS.map(historyFor)), wins = Object.fromEntries(USERS.map(u => [u.id, 0]));
+  let ties = 0;
+  rows.forEach(row => { if (row.winner) wins[row.winner]++; if (row.status === 'tie') ties++; });
+  view.innerHTML = `<div class="section-heading"><h3>Weekly results</h3><span class="mut">Completed weeks decide the winner</span></div><div class="win-summary">${USERS.map(u => `<span>${esc(userLabel(u))}: <strong>${wins[u.id]} ${wins[u.id] === 1 ? 'win' : 'wins'}</strong></span>`).join('')}<span><strong>${ties}</strong> ${ties === 1 ? 'tie' : 'ties'}</span></div><div class="twrap"><table class="history-table"><thead><tr><th scope="col">Week · Mon–Sun</th>${USERS.map(u => `<th scope="col">${esc(userLabel(u))} · points</th>`).join('')}<th scope="col">Result</th></tr></thead><tbody>${rows.slice(0, historyLimit).map(row => { const winner = USERS.find(u => u.id === row.winner); const result = row.status === 'current' ? 'In progress' : row.status === 'inactive' ? 'No activity' : row.status === 'tie' ? 'Tie' : userLabel(winner); return `<tr class="${row.status === 'current' ? 'current-week' : ''}"><td class="week-label">${row.start} — ${row.end}</td>${row.stats.map(s => `<td title="${s.count} first-time solves">${formatScore(s.score)}</td>`).join('')}<td><span class="result-badge" ${winner ? `style="--user-color:${userColor(winner)}"` : ''}>${esc(result)}</span></td></tr>`; }).join('')}</tbody></table></div>${rows.length > historyLimit ? '<button class="btn btn-ghost topic-toggle" id="moreWeeks">Show earlier weeks</button>' : ''}<p class="card-note">Reconstructed from fetched histories and current problem ratings. Ties and inactive weeks award no wins. Current week stays in progress until Monday, 00:00 IST.</p>`;
+  if ($('moreWeeks')) $('moreWeeks').onclick = () => { historyLimit += 12; renderWeeklyHistory(); };
+}
+function comparisonRows(rows, data) {
+  return rows.map(({label, values}) => {
+    const max = Math.max(1, ...values);
+    return `<div class="metric-row" data-metric="${esc(label)}"><div class="metric-label"><span>${esc(label)}</span><span>${values.map((v, i) => `<span style="color:${userColor(USERS[i])}">${v}</span>`).join(' / ')}</span></div><div class="metric-pair">${values.map((v, i) => `<div class="metric-track" title="${esc(data[i].label)}: ${v}"><div class="metric-fill" style="--user-color:${userColor(USERS[i])};width:${v / max * 100}%"></div></div>`).join('')}</div></div>`;
+  }).join('');
+}
+function renderComparisonTopics(data, topics) {
+  const visible = compareTopicsExpanded ? topics : topics.slice(0, 10);
+  $('comparisonTopics').innerHTML = `<h4>Topics practiced</h4><div class="comparison-topic-grid">${visible.length ? comparisonRows(visible.map(tag => ({ label: tag, values: data.map(d => d.ps.filter(p => p.tags.includes(tag)).length) })), data) : '<p class="mut">No tagged solves yet.</p>'}</div>${topics.length > 10 ? `<button class="btn btn-ghost topic-toggle" id="moreCompareTopics" aria-expanded="${compareTopicsExpanded}">${compareTopicsExpanded ? 'Show less' : `Show more (${topics.length - 10})`}</button>` : ''}`;
+  if ($('moreCompareTopics')) $('moreCompareTopics').onclick = () => { compareTopicsExpanded = !compareTopicsExpanded; renderComparisonTopics(data, topics); };
+}
+function renderCompare() {
+  renderToday('todayView', USERS);
+  renderWeekly(); renderWeeklyHistory();
+  $('comparisonLegend').innerHTML = USERS.map(u => `<span><i class="nav-dot" style="--user-color:${userColor(u)}"></i>${esc(userLabel(u))}</span>`).join('');
+  if (!USERS.every(hasSynced)) { $('cmpTable').innerHTML = emptyHTML('Sync both histories to compare progress.', 'Total solves, streaks, and topics will appear here.'); return; }
+  const data = USERS.map(u => { const ps = historyFor(u), st = streak(ps.map(p => p.date)); return {label: userLabel(u), ps, n: ps.length, star: ps.filter(p => isStar(u.id, p)).length, cur: st.cur, best: st.best}; });
+  const totals = {};
+  data.forEach(d => d.ps.forEach(p => p.tags.forEach(t => { totals[t] = (totals[t] || 0) + 1; })));
+  const topics = Object.entries(totals).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).map(([tag]) => tag);
+  $('cmpTable').innerHTML = `<div><h4>Consistency & volume</h4><div class="consistency-grid">${comparisonRows([{label: 'Problems solved', values: data.map(d => d.n)}, {label: 'Current streak', values: data.map(d => d.cur)}, {label: 'Best streak', values: data.map(d => d.best)}, {label: 'Starred problems', values: data.map(d => d.star)}], data)}</div></div><div id="comparisonTopics"></div>`;
+  renderComparisonTopics(data, topics);
+}
+
+// ---- personal dashboard, searchable solves, and accessible HTML charts ----
+function starButton(u, p) {
+  const on = isStar(u.id, p);
+  return `<button class="star" data-user="${u.id}" data-s="${p.cid}|${p.idx}" aria-label="${on ? 'Unstar' : 'Star'} ${esc(problemKey(p))}" aria-pressed="${on}">${on ? '★' : '☆'}</button>`;
+}
+function renderToday(id, users) {
+  $(id).innerHTML = `<div class="section-heading"><div class="today-heading">${icon('check')}<h3>Today’s solves</h3></div><span class="mut">${today()} · IST · first-time solves</span></div><div class="${users.length > 1 ? 'today-grid' : ''}">${users.map(u => {
+    const ready = hasSynced(u), problems = ready ? historyFor(u).filter(p => p.date === today()) : [];
+    return `<div class="today-user" style="--user-color:${userColor(u)}">${users.length > 1 ? `<div class="user-line">${avatar(u)}<h4>${esc(userLabel(u))}</h4><span class="solve-count">${ready ? problems.length + ' solved' : 'Not synced'}</span></div>` : ''}<div class="today-list">${problems.length ? problems.map(p => `<div class="today-problem">${starButton(u, p)}<div class="today-problem-info"><a class="problem-link" href="${esc(p.url)}" target="_blank" rel="noopener"><span class="problem-id">${esc(problemKey(p))}</span><span class="problem-title">${esc(problemTitle(p))}</span></a><div class="today-tags">${p.tags.length ? p.tags.map(tag => `<span class="tag">${esc(tag)}</span>`).join('') : '<span class="mut">No tags</span>'}</div></div>${ratingChip(p)}</div>`).join('') : `<p class="today-empty">${icon('code')}${ready ? 'No new solves today.' : esc(syncHint(u))}</p>`}</div>${problems.length > 4 ? '<p class="card-note">Scroll to see all of today’s solves.</p>' : ''}</div>`;
+  }).join('')}</div>`;
+}
+function rowHTML(u, p) {
+  return `<tr><td>${starButton(u, p)}</td><td><a class="problem-link" href="${esc(p.url)}" target="_blank" rel="noopener"><span class="problem-id">${esc(problemKey(p))}</span><span>${esc(problemTitle(p))}</span></a></td><td>${ratingChip(p)}</td><td>${p.tags.map(t => `<span class="tag">${esc(t)}</span>`).join(' ')}</td><td class="mut">${p.date}</td></tr>`;
+}
+function paintList(u) {
+  const ps = historyFor(u), list = filtered(u);
+  const title = !handles[u.id] ? 'Add your Codeforces handle.' : !hasSynced(u) ? syncHint(u) : !ps.length ? 'No accepted problems yet.' : 'No matching problems.';
+  $('plist').innerHTML = list.slice(0, 500).map(p => rowHTML(u, p)).join('') || `<tr><td colspan="5">${emptyHTML(title, hasSynced(u) && ps.length ? 'Try a different search or turn off the starred filter.' : 'Manage your duo, sync your handle, and your solves will appear here.')}</td></tr>`;
+  $('pcount').textContent = `Your solved problems`;
+  $('pnote').textContent = `${list.length} of ${ps.length} problems${list.length > 500 ? ' · Showing first 500. Use search to narrow the list.' : ''}`;
+}
+function drawRating(u) {
+  const ps = historyFor(u).filter(p => inP(p, cutoff())), rated = ps.filter(p => p.rating != null);
+  $('avg').textContent = `${ps.length} solved · ${rated.length} rated · ${ps.length - rated.length} unrated${rated.length ? ` · ${Math.round(rated.reduce((sum, p) => sum + p.rating, 0) / rated.length)} average rating` : ''}`;
+  if (!ps.length) { $('rchart').innerHTML = emptyHTML('No solves in this period.', 'Choose another period or sync your history.'); return; }
+  const counts = ratingCounts(ps), keys = ratingKeys([counts]);
+  $('rchart').innerHTML = ratingGraphHTML(keys, [{ label: userLabel(u), counts }], 'rchart') + `<details class="chart-data"><summary>View exact counts</summary><div class="rating-breakdown twrap"><table><thead><tr><th scope="col">Problem rating</th><th scope="col">Solved</th></tr></thead><tbody>${keys.map(key => `<tr><th scope="row">${key === 'unrated' ? 'Unrated' : esc(key)}</th><td>${counts[key]}</td></tr>`).join('')}</tbody></table></div></details>`;
+}
+function drawTags(u) {
+  const counts = {};
+  historyFor(u).filter(p => inP(p, cutoff())).forEach(p => (p.tags.length ? p.tags : ['untagged']).forEach(t => { counts[t] = (counts[t] || 0) + 1; }));
+  const rows = Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])), max = rows[0]?.[1] || 1;
+  const expanded = expandedTopics.has(u.id), visible = expanded ? rows : rows.slice(0, 10);
+  $('tchart').innerHTML = rows.length ? visible.map(([tag, count]) => `<div class="tag-row"><span class="tag-name">${esc(tag)}</span><div class="metric-track" aria-hidden="true"><div class="metric-fill" style="width:${count / max * 100}%"></div></div><b>${count}</b></div>`).join('') + (rows.length > 10 ? `<button class="btn btn-ghost topic-toggle" id="moreTopics" aria-expanded="${expanded}">${expanded ? 'Show less' : `Show more (${rows.length - 10})`}</button>` : '') : emptyHTML('No topics in this period.', 'Choose another period or sync your history.');
+  if ($('moreTopics')) $('moreTopics').onclick = () => { if (expandedTopics.has(u.id)) expandedTopics.delete(u.id); else expandedTopics.add(u.id); drawTags(u); };
+}
+function renderUser() {
+  const u = USERS.find(x => x.id === active), ps = historyFor(u), st = streak(ps.map(p => p.date));
+  const starred = ps.filter(p => isStar(u.id, p)), td = ps.filter(p => p.date === today()), ready = hasSynced(u);
+  const metrics = [
+    {label: 'Solved today', value: td.length, note: 'First-time accepted problems.', glyph: 'check'},
+    {label: 'Current streak', value: st.cur + 'd', note: `Personal best: ${st.best} days`, glyph: 'flame'},
+    {label: 'Total solved', value: ps.length, note: 'Unique solves in public Codeforces history.', glyph: 'code'},
+    {label: 'Starred', value: starred.length, note: 'Good problems to revisit.', glyph: 'star'},
+  ];
+  $('userView').innerHTML = `<div class="card today-card" id="todayProfile"></div><div class="user-stats">${metrics.map((m, i) => `<div class="card stat-card" style="--stat-color:${['var(--acc)', '#dfa57c', 'var(--partner)', 'var(--star)'][i]}"><div class="stat-label">${m.label}${icon(m.glyph)}</div><b ${i === 3 ? 'id="statStar"' : ''}>${ready ? m.value : '—'}</b><small>${ready ? m.note : esc(syncHint(u))}</small></div>`).join('')}</div>
+    <div class="chart-grid"><div class="card"><div class="rhead chart-heading"><div><div class="eyebrow">Problem ratings</div><h3>Solved by rating</h3></div><label class="sr-only" for="period">Chart period</label><select id="period">${PERIODS.map(([v, label]) => `<option value="${v}" ${period === v ? 'selected' : ''}>${label}</option>`).join('')}</select></div><p class="mut" id="avg"></p><div id="rchart"></div></div><div class="card"><div class="chart-heading"><div class="eyebrow">Problem topics</div><h3>Topics practiced</h3><p class="mut">Same period as the rating breakdown.</p></div><div id="tchart"></div></div></div>
+    <div class="card activity-card"><div class="section-heading"><div><div class="eyebrow">Accepted activity</div><h3>Your activity</h3></div><span class="mut">26 weeks · India time</span></div>${heatHTML(ps.map(p => p.date))}</div>
+    <div class="card solved-card"><div class="section-heading"><div><div class="eyebrow">Problem history</div><h3 id="pcount">Your solved problems</h3></div><div class="sbar"><label class="sr-only" for="fq">Search solved problems</label><input type="search" id="fq" value="${esc(fq)}" placeholder="Search problems or topics…"><label><input type="checkbox" id="fStar" ${fStarOnly ? 'checked' : ''}> Starred</label></div></div><div class="twrap"><table class="problem-table"><thead><tr><th scope="col"><span class="sr-only">Star</span></th><th scope="col">PROBLEM</th><th scope="col">RATING</th><th scope="col">TOPICS</th><th scope="col">FIRST SOLVED</th></tr></thead><tbody id="plist"></tbody></table></div><p class="card-note" id="pnote"></p></div>`;
+  $('fq').oninput = e => { fq = e.target.value; paintList(u); };
+  $('fStar').onchange = e => { fStarOnly = e.target.checked; paintList(u); };
+  $('period').onchange = e => { period = e.target.value; drawRating(u); drawTags(u); };
+  renderToday('todayProfile', [u]);
+  paintList(u); drawRating(u); drawTags(u);
+}
+
+// ---- optional contest comparison: fetched only on request ----
+function drawHistory(ratings) {
+  const all = Object.values(ratings).flat();
+  if (!all.length) { $('chart').innerHTML = emptyHTML('No rated contests yet.', 'Your rating history will appear after a rated contest.'); return; }
+  const width = 900, height = 250, left = 50, right = 20, top = 25, bottom = 35;
+  const t0 = Math.min(...all.map(c => c.ratingUpdateTimeSeconds)), t1 = Math.max(...all.map(c => c.ratingUpdateTimeSeconds));
+  const r0 = Math.min(...all.map(c => c.newRating)) - 100, r1 = Math.max(...all.map(c => c.newRating)) + 100;
+  const x = t => left + (t - t0) / Math.max(1, t1 - t0) * (width - left - right), y = r => height - bottom - (r - r0) / (r1 - r0) * (height - top - bottom);
+  let svg = '';
+  for (let i = 0; i <= 3; i++) { const value = r0 + (r1 - r0) * i / 3; svg += `<line x1="${left}" x2="${width - right}" y1="${y(value)}" y2="${y(value)}" stroke="var(--line)"/><text x="${left - 10}" y="${y(value) + 4}" text-anchor="end" fill="var(--mut)" font-size="11">${Math.round(value)}</text>`; }
+  Object.entries(ratings).forEach(([handle, raw]) => {
+    const rs = [...raw].sort((a, b) => a.ratingUpdateTimeSeconds - b.ratingUpdateTimeSeconds), u = USERS.find(u => handles[u.id]?.toLowerCase() === handle.toLowerCase());
+    const color = u ? userColor(u) : 'var(--acc)';
+    svg += `<polyline points="${rs.map(c => `${x(c.ratingUpdateTimeSeconds)},${y(c.newRating)}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2.5"/>`;
+    rs.forEach(c => { svg += `<circle cx="${x(c.ratingUpdateTimeSeconds)}" cy="${y(c.newRating)}" r="3" fill="${color}"><title>${esc(handle)}: ${c.newRating} · ${dstr(c.ratingUpdateTimeSeconds)}</title></circle>`; });
+  });
+  svg += `<text x="${left}" y="${height - 6}" fill="var(--mut)" font-size="11">${dstr(t0)}</text><text x="${width - right}" y="${height - 6}" text-anchor="end" fill="var(--mut)" font-size="11">${dstr(t1)}</text>`;
+  $('chart').innerHTML = `<div class="legend">${Object.keys(ratings).map(handle => { const u = USERS.find(u => handles[u.id]?.toLowerCase() === handle.toLowerCase()); return `<span><i class="nav-dot" style="--user-color:${u ? userColor(u) : 'var(--acc)'}"></i>${esc(handle)}</span>`; }).join('')}</div><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Contest rating history from ${dstr(t0)} to ${dstr(t1)}" style="font-family:var(--mono)">${svg}</svg>`;
+}
+async function fetchCF() {
+  if (fetchingRatings) return;
+  const hs = USERS.map(u => handles[u.id]).filter(Boolean), key = hs.join(';');
+  if (!hs.length) { $('cfMsg').textContent = 'Add your duo’s handles first.'; return; }
+  fetchingRatings = true; $('fetchCF').disabled = true; $('cfMsg').textContent = 'Loading contest history…';
+  try {
+    const info = await (await fetch(`https://codeforces.com/api/user.info?handles=${encodeURIComponent(key)}`)).json();
+    if (info.status !== 'OK') throw new Error('CF info failed');
+    const ratings = {};
+    for (const h of hs) {
+      const response = await (await fetch(`https://codeforces.com/api/user.rating?handle=${encodeURIComponent(h)}`)).json();
+      if (response.status !== 'OK') throw new Error('CF ratings failed');
+      ratings[h] = response.result || [];
+    }
+    if (USERS.map(u => handles[u.id]).filter(Boolean).join(';') !== key) return;
+    $('cfTable').innerHTML = `<table><thead><tr><th scope="col">USER</th><th scope="col">RATING</th><th scope="col">BEST</th><th scope="col">CONTESTS</th><th scope="col">BEST GAIN</th></tr></thead><tbody>${info.result.map(m => { const rs = ratings[hs.find(h => h.toLowerCase() === m.handle.toLowerCase())] || []; return `<tr><td>${esc(m.handle)}<br><span class="mut">${esc(m.rank || 'Unrated')}</span></td><td>${m.rating ?? '—'}</td><td>${m.maxRating ?? '—'}</td><td>${rs.length}</td><td>+${Math.max(0, ...rs.map(c => c.newRating - c.oldRating))}</td></tr>`; }).join('')}</tbody></table>`;
+    drawHistory(ratings); $('cfMsg').textContent = 'Contest history is up to date.';
+  } catch { $('cfMsg').textContent = 'Codeforces couldn’t load contest history. Try again.'; }
+  finally { fetchingRatings = false; $('fetchCF').disabled = false; }
+}
+function render() {
+  paintTabs(); renderHero();
+  $('compareView').style.display = active === '__cmp' ? '' : 'none';
+  $('userView').style.display = active === '__cmp' ? 'none' : '';
+  active === '__cmp' ? renderCompare() : renderUser();
+}
+document.querySelector('main').onclick = e => {
+  const button = e.target.closest('.star[data-user][data-s]');
+  if (!button) return;
+  const u = USERS.find(user => user.id === button.dataset.user);
+  const [cid, idx] = button.dataset.s.split('|');
+  const p = u && historyFor(u).find(problem => String(problem.cid) === cid && problem.idx === idx);
+  if (!p) return;
+  const on = !isStar(u.id, p);
+  setStar(u.id, p, on);
+  document.querySelectorAll('.star[data-user][data-s]').forEach(control => {
+    if (control.dataset.user !== u.id || control.dataset.s !== button.dataset.s) return;
+    control.textContent = on ? '★' : '☆';
+    control.setAttribute('aria-pressed', String(on));
+    control.setAttribute('aria-label', `${on ? 'Unstar' : 'Star'} ${problemKey(p)}`);
+  });
+  if (active === u.id) {
+    $('statStar').textContent = historyFor(u).filter(problem => isStar(u.id, problem)).length;
+    if (fStarOnly) paintList(u);
+  } else if (active === '__cmp') {
+    const row = document.querySelector('#cmpTable [data-metric="Starred problems"]');
+    if (row) row.outerHTML = comparisonRows([{ label: 'Starred problems', values: USERS.map(user => historyFor(user).filter(problem => isStar(user.id, problem)).length) }], USERS.map(user => ({ label: userLabel(user) })));
+  }
+};
+function navigate(view) { active = view; fq = ''; fStarOnly = false; savePreferences(); render(); }
+$('tabs').onclick = e => { const button = e.target.closest('[data-u]'); if (button) navigate(button.dataset.u); };
+$('brandHome').onclick = e => { e.preventDefault(); navigate('__cmp'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+$('sidebarToggle').onclick = () => { sidebarCollapsed = !sidebarCollapsed; applySidebar(); savePreferences(); };
+$('fetchCF').onclick = fetchCF; $('syncAll').onclick = syncAll;
+$('menuBtn').onclick = openSettings; $('sideClose').onclick = closeSide;
+$('side').onclose = render;
+$('side').onclick = e => { if (e.target !== $('side')) return; const rect = $('side').getBoundingClientRect(); if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) closeSide(); };
+let graphFrame = 0, workspaceWidth = 0;
+const graphResizeObserver = new ResizeObserver(entries => {
+  const width = Math.round(entries[0].contentRect.width);
+  if (width === workspaceWidth) return;
+  const initial = workspaceWidth === 0;
+  workspaceWidth = width;
+  if (initial) return;
+  cancelAnimationFrame(graphFrame);
+  graphFrame = requestAnimationFrame(() => {
+    if (active === '__cmp') renderWeekly();
+    else { const u = USERS.find(user => user.id === active); if (u && $('rchart')) drawRating(u); }
+  });
+});
+applySidebar(); paintSide(); render();
+graphResizeObserver.observe(document.querySelector('.workspace'));
+initFB().then(syncAll);
+</script>
+</body>
+</html>
