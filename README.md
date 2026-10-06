@@ -16,7 +16,7 @@ Then open <http://localhost:8137>.
 
 1. Push this repository to your GitHub account. The repository can remain private.
 2. In Cloudflare, open **Workers & Pages**, choose **Create application → Pages → Connect to Git**, and authorize the GitHub repository.
-3. Select **None** for the framework preset, leave the build command empty, and set the build output directory to `/` (the repository root). Deploy.
+3. Select **None** for the framework preset, use `exit 0` as the build command, and set the build output directory to `.` (the repository root). Deploy.
 
 Cloudflare Pages redeploys after pushes to the production branch and provides preview deployments for other branches. This app has no server-side build or backend requirement when used in local-storage mode.
 
