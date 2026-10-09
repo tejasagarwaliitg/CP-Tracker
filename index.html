@@ -214,6 +214,13 @@ tr:last-child td, tr:last-child th { border-bottom: 0; }
 .tag-row { display: grid; grid-template-columns: 110px 1fr 30px; align-items: center; gap: 14px; margin: 18px 0; font-size: 12px; }
 .tag-row .tag-name { color: #b6c0ce; overflow-wrap: anywhere; }
 .tag-row b { font-size: 11px; font-variant-numeric: tabular-nums; font-weight: 400; text-align: right; color: #b5c0d0; }
+.topic-link { border: 0; text-align: left; }
+.topic-link:hover { color: var(--acc); background: var(--raised); }
+.topic-name { padding: 0; background: transparent; color: inherit; border-bottom: 1px dotted #657083; }
+.tag-row.topic-link { width: 100%; padding: 8px; margin: 10px 0; border-radius: 6px; background: transparent; }
+.tag-row.topic-link:hover { background: var(--raised); }
+.tag-row.topic-link:hover .tag-name { color: var(--acc); }
+.tag-row .metric-fill { display: block; }
 .hwrap { overflow-x: auto; scrollbar-width: thin; }
 .hinner { width: fit-content; min-width: 100%; }
 .hlabels, .hgrid { display: flex; gap: 6px; }
@@ -238,6 +245,15 @@ input[type="checkbox"] { accent-color: var(--acc); width: 15px; height: 15px; }
 footer { display: flex; justify-content: space-between; gap: 20px; padding: 6px 0 12px; color: #778597; font-size: 10px; }
 #side { color: var(--txt); background: var(--card); border: 1px solid #3a4655; border-radius: 18px; padding: 30px; width: min(460px, calc(100vw - 32px)); max-height: calc(100vh - 40px); overflow-y: auto; box-shadow: 0 24px 100px #0008; }
 #side::backdrop { background: #080c12c9; backdrop-filter: blur(5px); }
+#topicDetail { color: var(--txt); background: var(--card); border: 1px solid #3a4655; border-radius: 18px; padding: 28px; width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); overflow-y: auto; box-shadow: 0 24px 100px #0008; }
+#topicDetail::backdrop { background: #080c12c9; backdrop-filter: blur(5px); }
+#topicTitle { overflow-wrap: anywhere; }
+#topicDetail .shead { align-items: start; }
+#topicDetail .eyebrow { margin-bottom: 6px; }
+.topic-controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin: 20px 0 14px; }
+.topic-totals { display: flex; flex-wrap: wrap; gap: 12px 24px; margin-bottom: 18px; color: var(--mut); font-size: 12px; }
+.topic-totals strong { color: var(--user-color); font-variant-numeric: tabular-nums; }
+#topicRatingTable { margin-top: 20px; }
 .shead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 20px; }
 .shead h2 { font-size: 26px; letter-spacing: -.7px; }
 #sideUsers { display: grid; gap: 18px; margin: 26px 0; }
@@ -366,6 +382,13 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 6px 
     <button class="btn btn-primary" id="sideSave" type="submit">Save & sync</button>
   </form>
 </dialog>
+<dialog id="topicDetail" aria-labelledby="topicTitle" aria-describedby="topicContext">
+  <div class="shead"><div><div class="eyebrow">Topic breakdown</div><h2 id="topicTitle"></h2></div><button class="btn btn-ghost" id="topicClose" aria-label="Close topic breakdown" autofocus>✕</button></div>
+  <div class="topic-controls"><p class="mut" id="topicContext"></p><div><label class="sr-only" for="topicPeriod">Topic breakdown period</label><select id="topicPeriod"></select></div></div>
+  <div class="topic-totals" id="topicTotals"></div>
+  <div id="topicRatingChart"></div>
+  <div class="rating-breakdown twrap" id="topicRatingTable"></div>
+</dialog>
 <div class="app">
   <aside class="rail" id="workspaceRail" aria-label="Workspace navigation">
     <a class="brand" href="#" id="brandHome"><span class="brand-mark" aria-hidden="true">&gt;_</span><span class="brand-label">CP Tracker<small>ICPC PRACTICE</small></span></a>
@@ -457,6 +480,7 @@ let weekOffset = 0, historyLimit = 12;
 let sidebarCollapsed = preferences.sidebarCollapsed === true;
 const expandedTopics = new Set();
 let compareTopicsExpanded = false;
+let topicDetail = null;
 let fq = '', fStarOnly = false;
 const userLabel = u => handles[u.id] || u.name;
 const userColor = u => USERS.indexOf(u) === 1 ? 'var(--partner)' : 'var(--acc)';
@@ -472,6 +496,7 @@ const problemTitle = p => p.name.startsWith(problemKey(p) + ' · ') ? p.name.sli
 const ratingColor = rating => rating == null || rating === 'unrated' ? '#9aa4b2' : rating < 1200 ? '#a7b1bf' : rating < 1400 ? '#76c398' : rating < 1600 ? '#6dc8c6' : rating < 1900 ? '#83abed' : rating < 2100 ? '#b39ae0' : rating < 2400 ? '#dfb27d' : '#e38f99';
 const ratingChip = p => `<span class="rating-chip ${p.rating == null ? 'unrated' : ''}" style="color:${ratingColor(p.rating)};background:color-mix(in srgb, ${ratingColor(p.rating)} 12%, transparent)">${p.rating ?? 'Unrated'}</span>`;
 const emptyHTML = (title, description) => `<div class="empty-state">${icon('code')}<strong>${esc(title)}</strong><p>${esc(description)}</p></div>`;
+const topicButton = (tag, userId, className = 'tag') => `<button class="${className} topic-link" data-topic="${esc(tag)}" data-topic-user="${userId}" aria-haspopup="dialog" aria-controls="topicDetail" aria-label="View ${esc(tag)} solves by rating">${esc(tag)}</button>`;
 function savePreferences() { writeStored(LS_PREF, { active, sidebarCollapsed }); }
 function applySidebar() {
   document.querySelector('.app').classList.toggle('sidebar-collapsed', sidebarCollapsed);
@@ -753,15 +778,15 @@ function renderWeeklyHistory() {
   view.innerHTML = `<div class="section-heading"><h3>Weekly results</h3><span class="mut">Completed weeks decide the winner</span></div><div class="win-summary">${USERS.map(u => `<span>${esc(userLabel(u))}: <strong>${wins[u.id]} ${wins[u.id] === 1 ? 'win' : 'wins'}</strong></span>`).join('')}<span><strong>${ties}</strong> ${ties === 1 ? 'tie' : 'ties'}</span></div><div class="twrap"><table class="history-table"><thead><tr><th scope="col">Week · Mon–Sun</th>${USERS.map(u => `<th scope="col">${esc(userLabel(u))} · points</th>`).join('')}<th scope="col">Result</th></tr></thead><tbody>${rows.slice(0, historyLimit).map(row => { const winner = USERS.find(u => u.id === row.winner); const result = row.status === 'current' ? 'In progress' : row.status === 'inactive' ? 'No activity' : row.status === 'tie' ? 'Tie' : userLabel(winner); return `<tr class="${row.status === 'current' ? 'current-week' : ''}"><td class="week-label">${row.start} — ${row.end}</td>${row.stats.map(s => `<td title="${s.count} first-time solves">${formatScore(s.score)}</td>`).join('')}<td><span class="result-badge" ${winner ? `style="--user-color:${userColor(winner)}"` : ''}>${esc(result)}</span></td></tr>`; }).join('')}</tbody></table></div>${rows.length > historyLimit ? '<button class="btn btn-ghost topic-toggle" id="moreWeeks">Show earlier weeks</button>' : ''}<p class="card-note">Reconstructed from fetched histories and current problem ratings. Ties and inactive weeks award no wins. Current week stays in progress until Monday, 00:00 IST.</p>`;
   if ($('moreWeeks')) $('moreWeeks').onclick = () => { historyLimit += 12; renderWeeklyHistory(); };
 }
-function comparisonRows(rows, data) {
+function comparisonRows(rows, data, topics = false) {
   return rows.map(({label, values}) => {
     const max = Math.max(1, ...values);
-    return `<div class="metric-row" data-metric="${esc(label)}"><div class="metric-label"><span>${esc(label)}</span><span>${values.map((v, i) => `<span style="color:${userColor(USERS[i])}">${v}</span>`).join(' / ')}</span></div><div class="metric-pair">${values.map((v, i) => `<div class="metric-track" title="${esc(data[i].label)}: ${v}"><div class="metric-fill" style="--user-color:${userColor(USERS[i])};width:${v / max * 100}%"></div></div>`).join('')}</div></div>`;
+    return `<div class="metric-row" data-metric="${esc(label)}"><div class="metric-label"><span>${topics ? topicButton(label, '__cmp', 'topic-name') : esc(label)}</span><span>${values.map((v, i) => `<span style="color:${userColor(USERS[i])}">${v}</span>`).join(' / ')}</span></div><div class="metric-pair">${values.map((v, i) => `<div class="metric-track" title="${esc(data[i].label)}: ${v}"><div class="metric-fill" style="--user-color:${userColor(USERS[i])};width:${v / max * 100}%"></div></div>`).join('')}</div></div>`;
   }).join('');
 }
 function renderComparisonTopics(data, topics) {
   const visible = compareTopicsExpanded ? topics : topics.slice(0, 10);
-  $('comparisonTopics').innerHTML = `<h4>Topics practiced</h4><div class="comparison-topic-grid">${visible.length ? comparisonRows(visible.map(tag => ({ label: tag, values: data.map(d => d.ps.filter(p => p.tags.includes(tag)).length) })), data) : '<p class="mut">No tagged solves yet.</p>'}</div>${topics.length > 10 ? `<button class="btn btn-ghost topic-toggle" id="moreCompareTopics" aria-expanded="${compareTopicsExpanded}">${compareTopicsExpanded ? 'Show less' : `Show more (${topics.length - 10})`}</button>` : ''}`;
+  $('comparisonTopics').innerHTML = `<h4>Topics practiced · click to explore ratings</h4><div class="comparison-topic-grid">${visible.length ? comparisonRows(visible.map(tag => ({ label: tag, values: data.map(d => d.ps.filter(p => p.tags.includes(tag)).length) })), data, true) : '<p class="mut">No tagged solves yet.</p>'}</div>${topics.length > 10 ? `<button class="btn btn-ghost topic-toggle" id="moreCompareTopics" aria-expanded="${compareTopicsExpanded}">${compareTopicsExpanded ? 'Show less' : `Show more (${topics.length - 10})`}</button>` : ''}`;
   if ($('moreCompareTopics')) $('moreCompareTopics').onclick = () => { compareTopicsExpanded = !compareTopicsExpanded; renderComparisonTopics(data, topics); };
 }
 function renderCompare() {
@@ -785,11 +810,11 @@ function starButton(u, p) {
 function renderToday(id, users) {
   $(id).innerHTML = `<div class="section-heading"><div class="today-heading">${icon('check')}<h3>Today’s solves</h3></div><span class="mut">${today()} · IST · first-time solves</span></div><div class="${users.length > 1 ? 'today-grid' : ''}">${users.map(u => {
     const ready = hasSynced(u), problems = ready ? historyFor(u).filter(p => p.date === today()) : [];
-    return `<div class="today-user" style="--user-color:${userColor(u)}">${users.length > 1 ? `<div class="user-line">${avatar(u)}<h4>${esc(userLabel(u))}</h4><span class="solve-count">${ready ? problems.length + ' solved' : 'Not synced'}</span></div>` : ''}<div class="today-list">${problems.length ? problems.map(p => `<div class="today-problem">${starButton(u, p)}<div class="today-problem-info"><a class="problem-link" href="${esc(p.url)}" target="_blank" rel="noopener"><span class="problem-id">${esc(problemKey(p))}</span><span class="problem-title">${esc(problemTitle(p))}</span></a><div class="today-tags">${p.tags.length ? p.tags.map(tag => `<span class="tag">${esc(tag)}</span>`).join('') : '<span class="mut">No tags</span>'}</div></div>${ratingChip(p)}</div>`).join('') : `<p class="today-empty">${icon('code')}${ready ? 'No new solves today.' : esc(syncHint(u))}</p>`}</div>${problems.length > 4 ? '<p class="card-note">Scroll to see all of today’s solves.</p>' : ''}</div>`;
+    return `<div class="today-user" style="--user-color:${userColor(u)}">${users.length > 1 ? `<div class="user-line">${avatar(u)}<h4>${esc(userLabel(u))}</h4><span class="solve-count">${ready ? problems.length + ' solved' : 'Not synced'}</span></div>` : ''}<div class="today-list">${problems.length ? problems.map(p => `<div class="today-problem">${starButton(u, p)}<div class="today-problem-info"><a class="problem-link" href="${esc(p.url)}" target="_blank" rel="noopener"><span class="problem-id">${esc(problemKey(p))}</span><span class="problem-title">${esc(problemTitle(p))}</span></a><div class="today-tags">${p.tags.length ? p.tags.map(tag => topicButton(tag, u.id)).join('') : '<span class="mut">No tags</span>'}</div></div>${ratingChip(p)}</div>`).join('') : `<p class="today-empty">${icon('code')}${ready ? 'No new solves today.' : esc(syncHint(u))}</p>`}</div>${problems.length > 4 ? '<p class="card-note">Scroll to see all of today’s solves.</p>' : ''}</div>`;
   }).join('')}</div>`;
 }
 function rowHTML(u, p) {
-  return `<tr><td>${starButton(u, p)}</td><td><a class="problem-link" href="${esc(p.url)}" target="_blank" rel="noopener"><span class="problem-id">${esc(problemKey(p))}</span><span>${esc(problemTitle(p))}</span></a></td><td>${ratingChip(p)}</td><td>${p.tags.map(t => `<span class="tag">${esc(t)}</span>`).join(' ')}</td><td class="mut">${p.date}</td></tr>`;
+  return `<tr><td>${starButton(u, p)}</td><td><a class="problem-link" href="${esc(p.url)}" target="_blank" rel="noopener"><span class="problem-id">${esc(problemKey(p))}</span><span>${esc(problemTitle(p))}</span></a></td><td>${ratingChip(p)}</td><td>${p.tags.map(t => topicButton(t, u.id)).join(' ')}</td><td class="mut">${p.date}</td></tr>`;
 }
 function paintList(u) {
   const ps = historyFor(u), list = filtered(u);
@@ -805,12 +830,36 @@ function drawRating(u) {
   const counts = ratingCounts(ps), keys = ratingKeys([counts]);
   $('rchart').innerHTML = ratingGraphHTML(keys, [{ label: userLabel(u), counts }], 'rchart') + `<details class="chart-data"><summary>View exact counts</summary><div class="rating-breakdown twrap"><table><thead><tr><th scope="col">Problem rating</th><th scope="col">Solved</th></tr></thead><tbody>${keys.map(key => `<tr><th scope="row">${key === 'unrated' ? 'Unrated' : esc(key)}</th><td>${counts[key]}</td></tr>`).join('')}</tbody></table></div></details>`;
 }
+function openTopic(tag, userId) {
+  if (userId !== '__cmp' && !USERS.some(u => u.id === userId)) return;
+  topicDetail = { tag, userId, period: active === '__cmp' ? 'all' : period };
+  $('topicTitle').textContent = tag;
+  $('topicPeriod').innerHTML = PERIODS.map(([value, label]) => `<option value="${value}">${label}</option>`).join('');
+  $('topicPeriod').value = topicDetail.period;
+  if (!$('topicDetail').open) $('topicDetail').showModal();
+  renderTopicDetails();
+}
+function renderTopicDetails() {
+  if (!topicDetail) return;
+  const { tag, userId, period: topicPeriod } = topicDetail;
+  const users = userId === '__cmp' ? USERS : USERS.filter(u => u.id === userId);
+  const from = topicPeriod === 'all' ? '' : shiftDate(today(), -Number(topicPeriod));
+  const data = users.map(u => {
+    const problems = historyFor(u).filter(p => inP(p, from) && (tag === 'untagged' ? !p.tags.length : p.tags.includes(tag)));
+    return { label: userLabel(u), counts: hasSynced(u) ? ratingCounts(problems) : null, total: problems.length, color: users.length > 1 ? userColor(u) : undefined };
+  });
+  const keys = ratingKeys(data.map(d => d.counts || {}));
+  $('topicContext').textContent = `${PERIODS.find(([value]) => value === topicPeriod)[1]} · first-time solves`;
+  $('topicTotals').innerHTML = data.map((d, i) => `<span style="--user-color:${userColor(users[i])}">${esc(d.label)} · <strong>${d.counts ? `${d.total} solved` : 'Not synced'}</strong></span>`).join('');
+  $('topicRatingChart').innerHTML = keys.length ? ratingGraphHTML(keys, data, 'topicRatingChart') : emptyHTML('No topic solves in this period.', users.every(hasSynced) ? 'Choose a longer period to see more history.' : 'Sync your Codeforces history to see topic ratings.');
+  $('topicRatingTable').innerHTML = keys.length ? `<table><caption class="sr-only">${esc(tag)} solves by exact rating</caption><thead><tr><th scope="col">Problem rating</th>${data.map(d => `<th scope="col">${esc(d.label)} · solved</th>`).join('')}</tr></thead><tbody>${keys.map(key => `<tr><th scope="row">${ratingChip({ rating: key === 'unrated' ? null : Number(key) })}</th>${data.map(d => `<td>${d.counts ? d.counts[key] || 0 : '—'}</td>`).join('')}</tr>`).join('')}</tbody></table>` : '';
+}
 function drawTags(u) {
   const counts = {};
   historyFor(u).filter(p => inP(p, cutoff())).forEach(p => (p.tags.length ? p.tags : ['untagged']).forEach(t => { counts[t] = (counts[t] || 0) + 1; }));
   const rows = Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])), max = rows[0]?.[1] || 1;
   const expanded = expandedTopics.has(u.id), visible = expanded ? rows : rows.slice(0, 10);
-  $('tchart').innerHTML = rows.length ? visible.map(([tag, count]) => `<div class="tag-row"><span class="tag-name">${esc(tag)}</span><div class="metric-track" aria-hidden="true"><div class="metric-fill" style="width:${count / max * 100}%"></div></div><b>${count}</b></div>`).join('') + (rows.length > 10 ? `<button class="btn btn-ghost topic-toggle" id="moreTopics" aria-expanded="${expanded}">${expanded ? 'Show less' : `Show more (${rows.length - 10})`}</button>` : '') : emptyHTML('No topics in this period.', 'Choose another period or sync your history.');
+  $('tchart').innerHTML = rows.length ? visible.map(([tag, count]) => `<button class="tag-row topic-link" data-topic="${esc(tag)}" data-topic-user="${u.id}" aria-haspopup="dialog" aria-controls="topicDetail" aria-label="View ${esc(tag)} solves by rating"><span class="tag-name">${esc(tag)}</span><span class="metric-track" aria-hidden="true"><span class="metric-fill" style="width:${count / max * 100}%"></span></span><b>${count}</b></button>`).join('') + (rows.length > 10 ? `<button class="btn btn-ghost topic-toggle" id="moreTopics" aria-expanded="${expanded}">${expanded ? 'Show less' : `Show more (${rows.length - 10})`}</button>` : '') : emptyHTML('No topics in this period.', 'Choose another period or sync your history.');
   if ($('moreTopics')) $('moreTopics').onclick = () => { if (expandedTopics.has(u.id)) expandedTopics.delete(u.id); else expandedTopics.add(u.id); drawTags(u); };
 }
 function renderUser() {
@@ -823,7 +872,7 @@ function renderUser() {
     {label: 'Starred', value: starred.length, note: 'Good problems to revisit.', glyph: 'star'},
   ];
   $('userView').innerHTML = `<div class="card today-card" id="todayProfile"></div><div class="user-stats">${metrics.map((m, i) => `<div class="card stat-card" style="--stat-color:${['var(--acc)', '#dfa57c', 'var(--partner)', 'var(--star)'][i]}"><div class="stat-label">${m.label}${icon(m.glyph)}</div><b ${i === 3 ? 'id="statStar"' : ''}>${ready ? m.value : '—'}</b><small>${ready ? m.note : esc(syncHint(u))}</small></div>`).join('')}</div>
-    <div class="chart-grid"><div class="card"><div class="rhead chart-heading"><div><div class="eyebrow">Problem ratings</div><h3>Solved by rating</h3></div><label class="sr-only" for="period">Chart period</label><select id="period">${PERIODS.map(([v, label]) => `<option value="${v}" ${period === v ? 'selected' : ''}>${label}</option>`).join('')}</select></div><p class="mut" id="avg"></p><div id="rchart"></div></div><div class="card"><div class="chart-heading"><div class="eyebrow">Problem topics</div><h3>Topics practiced</h3><p class="mut">Same period as the rating breakdown.</p></div><div id="tchart"></div></div></div>
+    <div class="chart-grid"><div class="card"><div class="rhead chart-heading"><div><div class="eyebrow">Problem ratings</div><h3>Solved by rating</h3></div><label class="sr-only" for="period">Chart period</label><select id="period">${PERIODS.map(([v, label]) => `<option value="${v}" ${period === v ? 'selected' : ''}>${label}</option>`).join('')}</select></div><p class="mut" id="avg"></p><div id="rchart"></div></div><div class="card"><div class="chart-heading"><div class="eyebrow">Problem topics</div><h3>Topics practiced</h3><p class="mut">Click a topic to explore its ratings. Uses the same period.</p></div><div id="tchart"></div></div></div>
     <div class="card activity-card"><div class="section-heading"><div><div class="eyebrow">Accepted activity</div><h3>Your activity</h3></div><span class="mut">26 weeks · India time</span></div>${heatHTML(ps.map(p => p.date))}</div>
     <div class="card solved-card"><div class="section-heading"><div><div class="eyebrow">Problem history</div><h3 id="pcount">Your solved problems</h3></div><div class="sbar"><label class="sr-only" for="fq">Search solved problems</label><input type="search" id="fq" value="${esc(fq)}" placeholder="Search problems or topics…"><label><input type="checkbox" id="fStar" ${fStarOnly ? 'checked' : ''}> Starred</label></div></div><div class="twrap"><table class="problem-table"><thead><tr><th scope="col"><span class="sr-only">Star</span></th><th scope="col">PROBLEM</th><th scope="col">RATING</th><th scope="col">TOPICS</th><th scope="col">FIRST SOLVED</th></tr></thead><tbody id="plist"></tbody></table></div><p class="card-note" id="pnote"></p></div>`;
   $('fq').oninput = e => { fq = e.target.value; paintList(u); };
@@ -877,8 +926,11 @@ function render() {
   $('compareView').style.display = active === '__cmp' ? '' : 'none';
   $('userView').style.display = active === '__cmp' ? 'none' : '';
   active === '__cmp' ? renderCompare() : renderUser();
+  if ($('topicDetail').open) renderTopicDetails();
 }
 document.querySelector('main').onclick = e => {
+  const topic = e.target.closest('button[data-topic]');
+  if (topic) { openTopic(topic.dataset.topic, topic.dataset.topicUser); return; }
   const button = e.target.closest('.star[data-user][data-s]');
   if (!button) return;
   const u = USERS.find(user => user.id === button.dataset.user);
@@ -909,6 +961,10 @@ $('fetchCF').onclick = fetchCF; $('syncAll').onclick = syncAll;
 $('menuBtn').onclick = openSettings; $('sideClose').onclick = closeSide;
 $('side').onclose = render;
 $('side').onclick = e => { if (e.target !== $('side')) return; const rect = $('side').getBoundingClientRect(); if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) closeSide(); };
+$('topicClose').onclick = () => $('topicDetail').close();
+$('topicDetail').onclose = () => { topicDetail = null; };
+$('topicDetail').onclick = e => { if (e.target !== $('topicDetail')) return; const rect = $('topicDetail').getBoundingClientRect(); if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) $('topicDetail').close(); };
+$('topicPeriod').onchange = e => { if (topicDetail) { topicDetail.period = e.target.value; renderTopicDetails(); } };
 let graphFrame = 0, workspaceWidth = 0;
 const graphResizeObserver = new ResizeObserver(entries => {
   const width = Math.round(entries[0].contentRect.width);
@@ -920,6 +976,7 @@ const graphResizeObserver = new ResizeObserver(entries => {
   graphFrame = requestAnimationFrame(() => {
     if (active === '__cmp') renderWeekly();
     else { const u = USERS.find(user => user.id === active); if (u && $('rchart')) drawRating(u); }
+    if ($('topicDetail').open) renderTopicDetails();
   });
 });
 applySidebar(); paintSide(); render();
