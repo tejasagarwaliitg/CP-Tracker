@@ -20,7 +20,7 @@ Follow nearby formatting: JavaScript generally uses two-space indentation, semic
 
 ## Testing Guidelines
 
-Validation is currently manual; no testing framework or coverage threshold exists. Check handle entry, synchronization, user tabs, search, starred filtering, period selection, charts, and comparison views. Reload to verify local persistence. Exercise blank and invalid handles, empty histories, API failures, duplicate accepted submissions, and narrow screens. For date logic, check UTC boundaries and streak gaps. Test Firebase synchronization across two sessions when changing that path.
+Validation is currently manual; no testing framework or coverage threshold exists. Check configured member identities, synchronization, user tabs, search, starred filtering, period selection, charts, and comparison views. Reload to verify local persistence. Exercise invalid configured handles, empty histories, API failures, duplicate accepted submissions, and narrow screens. For date logic, check UTC boundaries and streak gaps. Test Firebase synchronization across two sessions when changing that path.
 
 ## Commit & Pull Request Guidelines
 
@@ -28,4 +28,4 @@ The repository has no commits yet, so no historical convention exists. Use conci
 
 ## Security & Configuration
 
-An empty `FIREBASE_CONFIG` selects localStorage mode. Firebase mode uses anonymous authentication and shared `marks` and `meta/handles` data; verify Firestore rules before enabling shared use. Never commit service-account credentials or private tokens.
+Member handles are fixed in `USERS`; legacy saved handles must not override them. An empty `FIREBASE_CONFIG` selects localStorage mode. Firebase mode uses anonymous authentication and shared `marks` data; verify Firestore rules before enabling shared use. Never commit service-account credentials or private tokens.

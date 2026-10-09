@@ -1,6 +1,6 @@
 # CP Tracker
 
-A dark, head-to-head Codeforces tracker for two teammates. It compares weekly weighted scores, shows solved problems and rating progress, and lets each person star problems for later. Handles and stars stay in this browser by default; shared synchronization requires Firebase configuration.
+A dark, head-to-head Codeforces tracker for two teammates. It compares weekly weighted scores, shows solved problems and rating progress, and lets each person star problems for later. The members are fixed as `tejasiitg` and `bhavyamodi605`. Stars stay in this browser by default; shared star synchronization requires Firebase configuration.
 
 ## Run locally
 
@@ -22,6 +22,6 @@ Cloudflare Pages redeploys after pushes to the production branch and provides pr
 
 ## Configuration
 
-`index.html` contains the app and its configuration. Codeforces data is fetched from the public API. With `FIREBASE_CONFIG` left empty, data is stored in the current browser only. Configure Firebase and appropriate Firestore security rules before expecting data to sync between devices or users. Never put private credentials or service-account keys in this static app.
+`index.html` contains the app and its configuration. Member handles are set in `USERS`; saved browser handles cannot override them. Codeforces data is fetched from the public API. With `FIREBASE_CONFIG` left empty, stars and view preferences are stored in the current browser only. Configure Firebase and appropriate Firestore security rules before expecting data to sync between devices or users. Never put private credentials or service-account keys in this static app.
 
 See [AGENTS.md](AGENTS.md) for contribution and validation guidance.

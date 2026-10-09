@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0e1116">
-<title>CP Tracker · Your practice room</title>
+<title>CP Tracker · Practice room</title>
 <style>
 :root {
   color-scheme: dark;
@@ -243,8 +243,6 @@ input[type="checkbox"] { accent-color: var(--acc); width: 15px; height: 15px; }
 .win-summary { display: flex; gap: 24px; flex-wrap: wrap; color: var(--mut); font-size: 12px; margin: 0 0 22px; }
 .win-summary strong { color: var(--txt); font-weight: 550; }
 footer { display: flex; justify-content: space-between; gap: 20px; padding: 6px 0 12px; color: #778597; font-size: 10px; }
-#side { color: var(--txt); background: var(--card); border: 1px solid #3a4655; border-radius: 18px; padding: 30px; width: min(460px, calc(100vw - 32px)); max-height: calc(100vh - 40px); overflow-y: auto; box-shadow: 0 24px 100px #0008; }
-#side::backdrop { background: #080c12c9; backdrop-filter: blur(5px); }
 #topicDetail { color: var(--txt); background: var(--card); border: 1px solid #3a4655; border-radius: 18px; padding: 28px; width: min(760px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); overflow-y: auto; box-shadow: 0 24px 100px #0008; }
 #topicDetail::backdrop { background: #080c12c9; backdrop-filter: blur(5px); }
 #topicTitle { overflow-wrap: anywhere; }
@@ -256,10 +254,6 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 6px 
 #topicRatingTable { margin-top: 20px; }
 .shead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 20px; }
 .shead h2 { font-size: 26px; letter-spacing: -.7px; }
-#sideUsers { display: grid; gap: 18px; margin: 26px 0; }
-#sideUsers label { display: flex; align-items: center; gap: 7px; }
-#handleSaveStatus { min-height: 32px; margin: 14px 0; color: var(--mut); font-size: 12px; }
-#sideSave { width: 100%; }
 .app.sidebar-collapsed { grid-template-columns: 64px minmax(0, 1fr); }
 .app.sidebar-collapsed .rail { padding: 24px 8px; }
 .app.sidebar-collapsed .brand { justify-content: center; padding: 0; }
@@ -298,7 +292,6 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 6px 
   .breadcrumb { display: none; }
   .top-actions { min-width: 0; flex: 1; gap: 4px; justify-content: flex-end; }
   .sync-status { max-width: 40%; font-size: 10px; margin-right: auto; }
-  #menuBtn { padding: 8px; font-size: 11px; gap: 6px; }
   #syncAll { padding: 9px; }
   #syncAll .button-text { display: none; }
   .hero { padding: 25px 0 23px; }
@@ -373,15 +366,6 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 6px 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
-<dialog id="side" aria-labelledby="settingsTitle">
-  <div class="shead"><h2 id="settingsTitle">Your duo.</h2><button class="btn btn-ghost" id="sideClose" aria-label="Close settings">✕</button></div>
-  <p class="mut">Add your Codeforces handles once. Come back to your practice room whenever you’re ready.</p>
-  <form id="handlesForm">
-    <div id="sideUsers"></div>
-    <p id="handleSaveStatus" role="status"></p>
-    <button class="btn btn-primary" id="sideSave" type="submit">Save & sync</button>
-  </form>
-</dialog>
 <dialog id="topicDetail" aria-labelledby="topicTitle" aria-describedby="topicContext">
   <div class="shead"><div><div class="eyebrow">Topic breakdown</div><h2 id="topicTitle"></h2></div><button class="btn btn-ghost" id="topicClose" aria-label="Close topic breakdown" autofocus>✕</button></div>
   <div class="topic-controls"><p class="mut" id="topicContext"></p><div><label class="sr-only" for="topicPeriod">Topic breakdown period</label><select id="topicPeriod"></select></div></div>
@@ -392,7 +376,7 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 6px 
 <div class="app">
   <aside class="rail" id="workspaceRail" aria-label="Workspace navigation">
     <a class="brand" href="#" id="brandHome"><span class="brand-mark" aria-hidden="true">&gt;_</span><span class="brand-label">CP Tracker<small>ICPC PRACTICE</small></span></a>
-    <div class="eyebrow rail-label">Your duo</div>
+    <div class="eyebrow rail-label">Members</div>
     <nav id="tabs" aria-label="Dashboard and teammate profiles"></nav>
     <div class="rail-bottom"><div class="eyebrow">Weekly reset</div><p class="mut" style="margin-top:6px">Monday, 00:00 IST</p></div>
   </aside>
@@ -402,7 +386,6 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 6px 
       <div class="breadcrumb">Practice <span>/</span> <b id="pageLabel">OVERVIEW</b></div>
       <div class="top-actions">
         <div class="sync-status" id="syncStatus" data-state="loading"><span class="status-dot" aria-hidden="true"></span><span id="sync" role="status">Getting ready…</span></div>
-        <button class="btn btn-ghost" id="menuBtn"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3a4 4 0 0 1 0 8M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></svg>Manage duo</button>
         <button class="btn btn-primary" id="syncAll" aria-label="Sync both Codeforces histories"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6.09 7a7 7 0 0 1 11.55-2L20 8M4 16l2.36 3A7 7 0 0 0 17.91 17"/></svg><span class="button-text">Sync now</span></button>
       </div>
     </header>
@@ -416,8 +399,8 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 6px 
         <div class="card" id="difficultyView"></div>
         <div class="card long-game"><div class="section-heading"><div><h3>All-time comparison</h3></div><span class="mut">All-time history</span></div><div class="legend" id="comparisonLegend"></div><div id="cmpTable"></div></div>
         <details class="card contest-card" id="contestPanel">
-          <summary><div><h3>Contest performance</h3><p class="mut">Ratings, peaks, and your contest history.</p></div><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
-          <div class="contest-content"><div class="rhead"><p class="mut" id="cfMsg" role="status">Compare ratings and contest history when you’re ready.</p><button class="btn" id="fetchCF">Fetch ratings</button></div><div id="chart"></div><div class="twrap" id="cfTable"></div></div>
+          <summary><div><h3>Contest performance</h3><p class="mut">Ratings, peaks, and contest history.</p></div><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+          <div class="contest-content"><div class="rhead"><p class="mut" id="cfMsg" role="status">Compare ratings and contest history.</p><button class="btn" id="fetchCF">Fetch ratings</button></div><div id="chart"></div><div class="twrap" id="cfTable"></div></div>
         </details>
         <div class="card history-card" id="weeklyHistoryView"></div>
       </section>
@@ -428,7 +411,7 @@ footer { display: flex; justify-content: space-between; gap: 20px; padding: 6px 
 </div>
 <script>
 // ---- configuration: two teammates, optional Firebase shared storage ----
-const USERS = [{ id: 'u1', name: 'You', cf: '' }, { id: 'u2', name: 'Teammate', cf: '' }];
+const USERS = [{ id: 'u1', cf: 'tejasiitg' }, { id: 'u2', cf: 'bhavyamodi605' }];
 const FIREBASE_CONFIG = {};
 const TRACKER_TIMEZONE = 'Asia/Kolkata';
 const DAY_MS = 864e5;
@@ -456,7 +439,7 @@ const dstr = ts => trackerDate(new Date(ts * 1000));
 const today = () => trackerDate(new Date());
 const shiftDate = (date, days) => new Date(Date.parse(date + 'T00:00:00Z') + days * DAY_MS).toISOString().slice(0, 10);
 const problemKey = p => `${p.cid}-${p.idx}`;
-const LS_M = 'cp-marks-v1', LS_H = 'cp-handles-v1', LS_PREF = 'cp-preferences-v1';
+const LS_M = 'cp-marks-v1', LS_PREF = 'cp-preferences-v1';
 let storageAvailable = true;
 function readStored(key) {
   try { const value = JSON.parse(localStorage.getItem(key)); return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
@@ -470,10 +453,8 @@ const preferences = readStored(LS_PREF);
 let active = preferences.active === '__cmp' || USERS.some(u => u.id === preferences.active) ? preferences.active : '__cmp';
 let period = 'all', solved = {}, syncState = {};
 let marks = readStored(LS_M);
-let handles = Object.fromEntries(USERS.map(u => [u.id, u.cf]));
-// Always restore browser storage, including when Firebase is configured or unavailable.
-const savedHandles = readStored(LS_H);
-USERS.forEach(u => { if (typeof savedHandles[u.id] === 'string') handles[u.id] = savedHandles[u.id].trim(); });
+// Member identities are fixed; legacy browser or cloud handles cannot override them.
+const handles = Object.freeze(Object.fromEntries(USERS.map(u => [u.id, u.cf])));
 let useFB = Object.keys(FIREBASE_CONFIG).length > 0, db = null;
 let syncing = false, syncQueued = false, fetchingRatings = false;
 let weekOffset = 0, historyLimit = 12;
@@ -482,7 +463,7 @@ const expandedTopics = new Set();
 let compareTopicsExpanded = false;
 let topicDetail = null;
 let fq = '', fStarOnly = false;
-const userLabel = u => handles[u.id] || u.name;
+const userLabel = u => handles[u.id];
 const userColor = u => USERS.indexOf(u) === 1 ? 'var(--partner)' : 'var(--acc)';
 const avatar = u => `<span class="avatar" aria-hidden="true">${esc(userLabel(u).slice(0, 2).toUpperCase())}</span>`;
 const hasSynced = u => !!handles[u.id] && syncState[u.id]?.status === 'ready' && syncState[u.id].handle === handles[u.id];
@@ -518,20 +499,9 @@ async function initFB() {
       writeStored(LS_M, marks);
       render();
     }, () => { setStatus('Cloud stars unavailable; saved on this browser.', 'error'); });
-    db.doc('meta/handles').onSnapshot(d => {
-      if (!d.exists) return;
-      const data = d.data();
-      const changed = USERS.some(u => typeof data[u.id] === 'string' && data[u.id] !== handles[u.id]);
-      USERS.forEach(u => { if (typeof data[u.id] === 'string') handles[u.id] = data[u.id].trim(); });
-      writeStored(LS_H, handles);
-      // Do not replace fields while somebody is typing in the settings dialog.
-      if (!$('side').open) paintSide();
-      render();
-      if (changed) syncAll();
-    }, () => { setStatus('Cloud handles unavailable; using browser-saved duo.', 'error'); });
   } catch {
     useFB = false; db = null;
-    setStatus('Cloud unavailable; your duo is saved here.', 'error');
+    setStatus('Cloud stars unavailable; using this browser.', 'error');
   }
 }
 async function setStar(u, p, on) {
@@ -545,39 +515,6 @@ async function setStar(u, p, on) {
     } catch { setStatus('Star saved here; cloud sync failed.', 'error'); }
   }
 }
-async function persistHandles() {
-  const saved = writeStored(LS_H, handles);
-  $('handleSaveStatus').textContent = saved ? 'Saved on this browser. They’ll be here next time.' : 'Browser storage is blocked. Allow site storage to remember your handles.';
-  if (useFB && db) {
-    try { await db.doc('meta/handles').set(handles, { merge: true }); }
-    catch { setStatus('Duo saved here; cloud sync failed.', 'error'); }
-  }
-  await syncAll();
-}
-function paintSide() {
-  $('sideUsers').innerHTML = USERS.map(u => `<div><label for="handle-${u.id}"><span class="nav-dot" style="--user-color:${userColor(u)}"></span>${esc(u.name)} · Codeforces handle</label><input id="handle-${u.id}" data-sh="${u.id}" value="${esc(handles[u.id] || '')}" placeholder="Your Codeforces handle" autocomplete="off" autocapitalize="none" spellcheck="false"></div>`).join('');
-  $('handleSaveStatus').textContent = 'Handles are saved automatically on this browser as you type.';
-}
-function openSettings() { paintSide(); $('side').showModal(); }
-function closeSide() { $('side').close(); render(); }
-$('sideUsers').oninput = e => {
-  const id = e.target.dataset.sh;
-  if (!USERS.some(u => u.id === id)) return;
-  handles[id] = e.target.value.trim();
-  const saved = writeStored(LS_H, handles);
-  $('handleSaveStatus').textContent = saved ? 'Saved on this browser. Hit Save & sync to refresh your progress.' : 'Browser storage is blocked. Allow site storage to remember your handles.';
-  paintTabs();
-};
-$('handlesForm').onsubmit = async e => {
-  e.preventDefault();
-  document.querySelectorAll('#sideUsers [data-sh]').forEach(input => { handles[input.dataset.sh] = input.value.trim(); });
-  $('cfTable').innerHTML = ''; $('chart').innerHTML = '';
-  $('cfMsg').textContent = 'Compare ratings and contest history when you’re ready.';
-  writeStored(LS_H, handles);
-  closeSide();
-  await persistHandles();
-};
-
 // ---- paged Codeforces sync; each problem belongs to its first accepted date ----
 async function syncUser(u) {
   const h = handles[u.id];
@@ -603,12 +540,12 @@ async function syncUser(u) {
 async function syncAll() {
   if (syncing) { syncQueued = true; return; }
   syncing = true;
-  $('syncAll').disabled = true; $('sideSave').disabled = true;
+  $('syncAll').disabled = true;
   USERS.forEach(u => {
     if (syncState[u.id]?.handle !== handles[u.id]) solved[u.id] = [];
     syncState[u.id] = { handle: handles[u.id], status: handles[u.id] ? 'loading' : 'empty' };
   });
-  setStatus(USERS.some(u => handles[u.id]) ? 'Syncing Codeforces…' : 'Add your duo to get started.', 'loading');
+  setStatus('Syncing Codeforces…', 'loading');
   render();
   try {
     const results = await Promise.allSettled(USERS.map(syncUser));
@@ -617,11 +554,10 @@ async function syncAll() {
       if (result.status === 'rejected') { syncState[USERS[i].id].status = 'error'; failed.push(userLabel(USERS[i])); }
     });
     if (failed.length) setStatus(`Couldn’t sync ${failed.join(', ')}. Try again.`, 'error');
-    else if (!USERS.some(u => handles[u.id])) setStatus('Your duo starts here.');
     else setStatus(`Updated ${new Intl.DateTimeFormat('en-IN', { timeZone: TRACKER_TIMEZONE, hour: '2-digit', minute: '2-digit' }).format(new Date())}`);
   } finally {
     syncing = false;
-    $('syncAll').disabled = false; $('sideSave').disabled = false;
+    $('syncAll').disabled = false;
     render();
     if (syncQueued) { syncQueued = false; await syncAll(); }
   }
@@ -682,10 +618,10 @@ function buildWeeklyHistory(histories, date = today()) {
   return rows;
 }
 function syncHint(u) {
-  if (!handles[u.id]) return 'Add your handle to start.';
-  if (syncState[u.id]?.status === 'loading') return 'Loading your history…';
-  if (syncState[u.id]?.status === 'error') return 'Sync failed. Check your handle or retry.';
-  return 'Sync your handle to load progress.';
+  if (!handles[u.id]) return 'No Codeforces handle configured.';
+  if (syncState[u.id]?.status === 'loading') return 'Loading Codeforces history…';
+  if (syncState[u.id]?.status === 'error') return 'Sync failed. Try Sync now again.';
+  return 'Use Sync now to load progress.';
 }
 function heatHTML(dates) {
   const counts = {};
@@ -715,7 +651,7 @@ function paintTabs() {
 function renderHero() {
   const user = USERS.find(u => u.id === active);
   $('pageLabel').textContent = user ? userLabel(user) : 'Overview';
-  $('heroEyebrow').textContent = user ? 'YOUR PROGRESS' : 'TWO TEAMMATES · ONE TEAM';
+  $('heroEyebrow').textContent = user ? 'MEMBER PROGRESS' : 'TWO TEAMMATES · ONE TEAM';
   $('heroTitle').textContent = user ? `${userLabel(user)}’s practice.` : 'Head to head.';
   $('heroCopy').textContent = user ? 'The problems, the patterns, and the progress.' : 'A little competition. A shared goal.';
   $('heroDate').innerHTML = icon('calendar') + esc(new Intl.DateTimeFormat('en-IN', { timeZone: TRACKER_TIMEZONE, weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date()));
@@ -818,15 +754,15 @@ function rowHTML(u, p) {
 }
 function paintList(u) {
   const ps = historyFor(u), list = filtered(u);
-  const title = !handles[u.id] ? 'Add your Codeforces handle.' : !hasSynced(u) ? syncHint(u) : !ps.length ? 'No accepted problems yet.' : 'No matching problems.';
-  $('plist').innerHTML = list.slice(0, 500).map(p => rowHTML(u, p)).join('') || `<tr><td colspan="5">${emptyHTML(title, hasSynced(u) && ps.length ? 'Try a different search or turn off the starred filter.' : 'Manage your duo, sync your handle, and your solves will appear here.')}</td></tr>`;
-  $('pcount').textContent = `Your solved problems`;
+  const title = !hasSynced(u) ? syncHint(u) : !ps.length ? 'No accepted problems yet.' : 'No matching problems.';
+  $('plist').innerHTML = list.slice(0, 500).map(p => rowHTML(u, p)).join('') || `<tr><td colspan="5">${emptyHTML(title, hasSynced(u) && ps.length ? 'Try a different search or turn off the starred filter.' : 'Use Sync now to load accepted problems.')}</td></tr>`;
+  $('pcount').textContent = `Solved problems`;
   $('pnote').textContent = `${list.length} of ${ps.length} problems${list.length > 500 ? ' · Showing first 500. Use search to narrow the list.' : ''}`;
 }
 function drawRating(u) {
   const ps = historyFor(u).filter(p => inP(p, cutoff())), rated = ps.filter(p => p.rating != null);
   $('avg').textContent = `${ps.length} solved · ${rated.length} rated · ${ps.length - rated.length} unrated${rated.length ? ` · ${Math.round(rated.reduce((sum, p) => sum + p.rating, 0) / rated.length)} average rating` : ''}`;
-  if (!ps.length) { $('rchart').innerHTML = emptyHTML('No solves in this period.', 'Choose another period or sync your history.'); return; }
+  if (!ps.length) { $('rchart').innerHTML = emptyHTML('No solves in this period.', 'Choose another period or sync Codeforces history.'); return; }
   const counts = ratingCounts(ps), keys = ratingKeys([counts]);
   $('rchart').innerHTML = ratingGraphHTML(keys, [{ label: userLabel(u), counts }], 'rchart') + `<details class="chart-data"><summary>View exact counts</summary><div class="rating-breakdown twrap"><table><thead><tr><th scope="col">Problem rating</th><th scope="col">Solved</th></tr></thead><tbody>${keys.map(key => `<tr><th scope="row">${key === 'unrated' ? 'Unrated' : esc(key)}</th><td>${counts[key]}</td></tr>`).join('')}</tbody></table></div></details>`;
 }
@@ -851,7 +787,7 @@ function renderTopicDetails() {
   const keys = ratingKeys(data.map(d => d.counts || {}));
   $('topicContext').textContent = `${PERIODS.find(([value]) => value === topicPeriod)[1]} · first-time solves`;
   $('topicTotals').innerHTML = data.map((d, i) => `<span style="--user-color:${userColor(users[i])}">${esc(d.label)} · <strong>${d.counts ? `${d.total} solved` : 'Not synced'}</strong></span>`).join('');
-  $('topicRatingChart').innerHTML = keys.length ? ratingGraphHTML(keys, data, 'topicRatingChart') : emptyHTML('No topic solves in this period.', users.every(hasSynced) ? 'Choose a longer period to see more history.' : 'Sync your Codeforces history to see topic ratings.');
+  $('topicRatingChart').innerHTML = keys.length ? ratingGraphHTML(keys, data, 'topicRatingChart') : emptyHTML('No topic solves in this period.', users.every(hasSynced) ? 'Choose a longer period to see more history.' : 'Sync Codeforces history to see topic ratings.');
   $('topicRatingTable').innerHTML = keys.length ? `<table><caption class="sr-only">${esc(tag)} solves by exact rating</caption><thead><tr><th scope="col">Problem rating</th>${data.map(d => `<th scope="col">${esc(d.label)} · solved</th>`).join('')}</tr></thead><tbody>${keys.map(key => `<tr><th scope="row">${ratingChip({ rating: key === 'unrated' ? null : Number(key) })}</th>${data.map(d => `<td>${d.counts ? d.counts[key] || 0 : '—'}</td>`).join('')}</tr>`).join('')}</tbody></table>` : '';
 }
 function drawTags(u) {
@@ -859,7 +795,7 @@ function drawTags(u) {
   historyFor(u).filter(p => inP(p, cutoff())).forEach(p => (p.tags.length ? p.tags : ['untagged']).forEach(t => { counts[t] = (counts[t] || 0) + 1; }));
   const rows = Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])), max = rows[0]?.[1] || 1;
   const expanded = expandedTopics.has(u.id), visible = expanded ? rows : rows.slice(0, 10);
-  $('tchart').innerHTML = rows.length ? visible.map(([tag, count]) => `<button class="tag-row topic-link" data-topic="${esc(tag)}" data-topic-user="${u.id}" aria-haspopup="dialog" aria-controls="topicDetail" aria-label="View ${esc(tag)} solves by rating"><span class="tag-name">${esc(tag)}</span><span class="metric-track" aria-hidden="true"><span class="metric-fill" style="width:${count / max * 100}%"></span></span><b>${count}</b></button>`).join('') + (rows.length > 10 ? `<button class="btn btn-ghost topic-toggle" id="moreTopics" aria-expanded="${expanded}">${expanded ? 'Show less' : `Show more (${rows.length - 10})`}</button>` : '') : emptyHTML('No topics in this period.', 'Choose another period or sync your history.');
+  $('tchart').innerHTML = rows.length ? visible.map(([tag, count]) => `<button class="tag-row topic-link" data-topic="${esc(tag)}" data-topic-user="${u.id}" aria-haspopup="dialog" aria-controls="topicDetail" aria-label="View ${esc(tag)} solves by rating"><span class="tag-name">${esc(tag)}</span><span class="metric-track" aria-hidden="true"><span class="metric-fill" style="width:${count / max * 100}%"></span></span><b>${count}</b></button>`).join('') + (rows.length > 10 ? `<button class="btn btn-ghost topic-toggle" id="moreTopics" aria-expanded="${expanded}">${expanded ? 'Show less' : `Show more (${rows.length - 10})`}</button>` : '') : emptyHTML('No topics in this period.', 'Choose another period or sync Codeforces history.');
   if ($('moreTopics')) $('moreTopics').onclick = () => { if (expandedTopics.has(u.id)) expandedTopics.delete(u.id); else expandedTopics.add(u.id); drawTags(u); };
 }
 function renderUser() {
@@ -873,8 +809,8 @@ function renderUser() {
   ];
   $('userView').innerHTML = `<div class="card today-card" id="todayProfile"></div><div class="user-stats">${metrics.map((m, i) => `<div class="card stat-card" style="--stat-color:${['var(--acc)', '#dfa57c', 'var(--partner)', 'var(--star)'][i]}"><div class="stat-label">${m.label}${icon(m.glyph)}</div><b ${i === 3 ? 'id="statStar"' : ''}>${ready ? m.value : '—'}</b><small>${ready ? m.note : esc(syncHint(u))}</small></div>`).join('')}</div>
     <div class="chart-grid"><div class="card"><div class="rhead chart-heading"><div><div class="eyebrow">Problem ratings</div><h3>Solved by rating</h3></div><label class="sr-only" for="period">Chart period</label><select id="period">${PERIODS.map(([v, label]) => `<option value="${v}" ${period === v ? 'selected' : ''}>${label}</option>`).join('')}</select></div><p class="mut" id="avg"></p><div id="rchart"></div></div><div class="card"><div class="chart-heading"><div class="eyebrow">Problem topics</div><h3>Topics practiced</h3><p class="mut">Click a topic to explore its ratings. Uses the same period.</p></div><div id="tchart"></div></div></div>
-    <div class="card activity-card"><div class="section-heading"><div><div class="eyebrow">Accepted activity</div><h3>Your activity</h3></div><span class="mut">26 weeks · India time</span></div>${heatHTML(ps.map(p => p.date))}</div>
-    <div class="card solved-card"><div class="section-heading"><div><div class="eyebrow">Problem history</div><h3 id="pcount">Your solved problems</h3></div><div class="sbar"><label class="sr-only" for="fq">Search solved problems</label><input type="search" id="fq" value="${esc(fq)}" placeholder="Search problems or topics…"><label><input type="checkbox" id="fStar" ${fStarOnly ? 'checked' : ''}> Starred</label></div></div><div class="twrap"><table class="problem-table"><thead><tr><th scope="col"><span class="sr-only">Star</span></th><th scope="col">PROBLEM</th><th scope="col">RATING</th><th scope="col">TOPICS</th><th scope="col">FIRST SOLVED</th></tr></thead><tbody id="plist"></tbody></table></div><p class="card-note" id="pnote"></p></div>`;
+    <div class="card activity-card"><div class="section-heading"><div><div class="eyebrow">Accepted activity</div><h3>Activity</h3></div><span class="mut">26 weeks · India time</span></div>${heatHTML(ps.map(p => p.date))}</div>
+    <div class="card solved-card"><div class="section-heading"><div><div class="eyebrow">Problem history</div><h3 id="pcount">Solved problems</h3></div><div class="sbar"><label class="sr-only" for="fq">Search solved problems</label><input type="search" id="fq" value="${esc(fq)}" placeholder="Search problems or topics…"><label><input type="checkbox" id="fStar" ${fStarOnly ? 'checked' : ''}> Starred</label></div></div><div class="twrap"><table class="problem-table"><thead><tr><th scope="col"><span class="sr-only">Star</span></th><th scope="col">PROBLEM</th><th scope="col">RATING</th><th scope="col">TOPICS</th><th scope="col">FIRST SOLVED</th></tr></thead><tbody id="plist"></tbody></table></div><p class="card-note" id="pnote"></p></div>`;
   $('fq').oninput = e => { fq = e.target.value; paintList(u); };
   $('fStar').onchange = e => { fStarOnly = e.target.checked; paintList(u); };
   $('period').onchange = e => { period = e.target.value; drawRating(u); drawTags(u); };
@@ -885,7 +821,7 @@ function renderUser() {
 // ---- optional contest comparison: fetched only on request ----
 function drawHistory(ratings) {
   const all = Object.values(ratings).flat();
-  if (!all.length) { $('chart').innerHTML = emptyHTML('No rated contests yet.', 'Your rating history will appear after a rated contest.'); return; }
+  if (!all.length) { $('chart').innerHTML = emptyHTML('No rated contests yet.', 'Rating history will appear after a rated contest.'); return; }
   const width = 900, height = 250, left = 50, right = 20, top = 25, bottom = 35;
   const t0 = Math.min(...all.map(c => c.ratingUpdateTimeSeconds)), t1 = Math.max(...all.map(c => c.ratingUpdateTimeSeconds));
   const r0 = Math.min(...all.map(c => c.newRating)) - 100, r1 = Math.max(...all.map(c => c.newRating)) + 100;
@@ -904,7 +840,7 @@ function drawHistory(ratings) {
 async function fetchCF() {
   if (fetchingRatings) return;
   const hs = USERS.map(u => handles[u.id]).filter(Boolean), key = hs.join(';');
-  if (!hs.length) { $('cfMsg').textContent = 'Add your duo’s handles first.'; return; }
+  if (!hs.length) { $('cfMsg').textContent = 'No Codeforces handles configured.'; return; }
   fetchingRatings = true; $('fetchCF').disabled = true; $('cfMsg').textContent = 'Loading contest history…';
   try {
     const info = await (await fetch(`https://codeforces.com/api/user.info?handles=${encodeURIComponent(key)}`)).json();
@@ -958,9 +894,6 @@ $('tabs').onclick = e => { const button = e.target.closest('[data-u]'); if (butt
 $('brandHome').onclick = e => { e.preventDefault(); navigate('__cmp'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 $('sidebarToggle').onclick = () => { sidebarCollapsed = !sidebarCollapsed; applySidebar(); savePreferences(); };
 $('fetchCF').onclick = fetchCF; $('syncAll').onclick = syncAll;
-$('menuBtn').onclick = openSettings; $('sideClose').onclick = closeSide;
-$('side').onclose = render;
-$('side').onclick = e => { if (e.target !== $('side')) return; const rect = $('side').getBoundingClientRect(); if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) closeSide(); };
 $('topicClose').onclick = () => $('topicDetail').close();
 $('topicDetail').onclose = () => { topicDetail = null; };
 $('topicDetail').onclick = e => { if (e.target !== $('topicDetail')) return; const rect = $('topicDetail').getBoundingClientRect(); if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) $('topicDetail').close(); };
@@ -979,7 +912,7 @@ const graphResizeObserver = new ResizeObserver(entries => {
     if ($('topicDetail').open) renderTopicDetails();
   });
 });
-applySidebar(); paintSide(); render();
+applySidebar(); render();
 graphResizeObserver.observe(document.querySelector('.workspace'));
 initFB().then(syncAll);
 </script>
